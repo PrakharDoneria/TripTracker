@@ -8,4 +8,6 @@ export interface Trip {
   endTime: Date;
   mode: TransportationMode;
   companions: number;
+  originCoords?: { lat: number, lon: number };
+  destinationCoords?: { lat: number, lon: number };
 }

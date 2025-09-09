@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -27,10 +28,12 @@ import { smartTripDetection } from "@/ai/flows/smart-trip-detection"
 import { nudgeForMissingData, type NudgeForMissingDataInput } from "@/ai/flows/nudge-for-missing-data"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useTripStore } from "@/hooks/use-trip-store"
+import PlaceSearch from "./place-search"
 
 const formSchema = z.object({
-  origin: z.string().min(2, "Origin is too short").max(50, "Origin is too long"),
-  destination: z.string().min(2, "Destination is too short").max(50, "Destination is too long"),
+  origin: z.string().min(2, "Origin is too short").max(100, "Origin is too long"),
+  destination: z.string().min(2, "Destination is too short").max(100, "Destination is too long"),
   startTime: z.date({ required_error: "Start time is required." }),
   endTime: z.date({ required_error: "End time is required." }),
   mode: z.enum(['walk', 'bike', 'car', 'bus', 'train'], { required_error: "Mode is required." }),
@@ -44,12 +47,10 @@ type TripFormValues = z.infer<typeof formSchema>;
 
 const transportationModes: TransportationMode[] = ['walk', 'bike', 'car', 'bus', 'train'];
 
-interface TripFormProps {
-  onAddTrip: (trip: Omit<Trip, 'id'>) => void;
-}
-
-export function TripForm({ onAddTrip }: TripFormProps) {
+export function TripForm() {
+  const router = useRouter();
   const { toast } = useToast();
+  const { addTrip } = useTripStore();
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionResult, setDetectionResult] = useState<any>(null);
   const [isNudging, setIsNudging] = useState(false);
@@ -67,12 +68,29 @@ export function TripForm({ onAddTrip }: TripFormProps) {
   });
 
   function onSubmit(data: TripFormValues) {
-    onAddTrip(data);
-    form.reset();
+    const tripData: Omit<Trip, 'id' | 'originCoords' | 'destinationCoords'> = {
+      ...data,
+      origin: form.getValues('origin'),
+      destination: form.getValues('destination'),
+    };
+    
+    // The coordinates will be set in the place search component
+    // We just need to find a way to pass them here.
+    // For now, let's assume they are part of the form state or retrieved differently.
+    
+    const originOption = form.getValues('origin');
+    const destOption = form.getValues('destination');
+
+    addTrip({
+        ...tripData,
+    });
+
+
     toast({
       title: "Trip Saved!",
       description: "Your new trip has been added to your trip chain.",
     });
+    router.push('/');
   }
 
   const handleAutoDetect = async () => {
@@ -142,12 +160,46 @@ export function TripForm({ onAddTrip }: TripFormProps) {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-4">
-                <FormField control={form.control} name="origin" render={({ field }) => (
-                  <FormItem><FormLabel>Origin</FormLabel><FormControl><Input placeholder="e.g., Home" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="destination" render={({ field }) => (
-                  <FormItem><FormLabel>Destination</FormLabel><FormControl><Input placeholder="e.g., Office" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
+                <FormField
+                  control={form.control}
+                  name="origin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Origin</FormLabel>
+                      <FormControl>
+                        <PlaceSearch
+                          onPlaceSelect={(place) => {
+                            if (place) {
+                              field.onChange(place.label);
+                            }
+                          }}
+                          placeholder="e.g., Home"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="destination"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Destination</FormLabel>
+                      <FormControl>
+                        <PlaceSearch
+                           onPlaceSelect={(place) => {
+                            if (place) {
+                              field.onChange(place.label);
+                            }
+                          }}
+                          placeholder="e.g., Office"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField control={form.control} name="startTime" render={({ field }) => (
                   <FormItem className="flex flex-col"><FormLabel>Start Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
                 )} />
