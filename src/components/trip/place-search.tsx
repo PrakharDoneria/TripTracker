@@ -18,22 +18,32 @@ interface PlaceSearchProps extends Omit<AsyncPaginateProps<Place, GroupBase<Plac
   onPlaceSelect: (place: Place | null) => void;
   placeholder?: string;
   instanceId?: string;
-  defaultValue?: Place;
+  defaultValue?: Place | null;
+  value?: Place | null;
 }
 
-export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId, defaultValue }: PlaceSearchProps) {
+export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId, defaultValue, value: controlledValue }: PlaceSearchProps) {
   const [value, setValue] = useState<Place | null>(defaultValue || null);
+  
+  const currentVal = controlledValue !== undefined ? controlledValue : value;
 
-  const loadOptions = async (search: string, loadedOptions: any) => {
+  const loadOptions = async (search: string, prevOptions: Place[], additional: { page: number }) => {
     try {
       if (!GEOAPIFY_API_KEY) {
         console.error("Geoapify API key is not set.");
         return {
           options: [],
           hasMore: false,
+          additional: {
+            page: 1,
+          },
         }
       }
-      const response = await fetch(`${GEOAPIFY_URL}?text=${search}&apiKey=${GEOAPIFY_API_KEY}&limit=5&skip=${loadedOptions.length}`);
+      
+      const page = additional?.page || 1;
+      const skip = (page - 1) * 5;
+
+      const response = await fetch(`${GEOAPIFY_URL}?text=${search}&apiKey=${GEOAPIFY_API_KEY}&limit=5&skip=${skip}`);
       const data = await response.json();
       
       const options = Array.isArray(data.features) ? data.features.map((feature: any) => ({
@@ -46,12 +56,18 @@ export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId, de
       return {
         options,
         hasMore: options.length > 0,
+        additional: {
+          page: page + 1,
+        },
       };
     } catch (error) {
       console.error(error);
       return {
         options: [],
         hasMore: false,
+        additional: {
+          page: 1,
+        },
       };
     }
   };
@@ -63,12 +79,15 @@ export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId, de
 
   return (
     <AsyncPaginate
-      value={value}
+      value={currentVal}
       loadOptions={loadOptions}
       onChange={handleChange}
       instanceId={instanceId}
       placeholder={placeholder || "Search for a place"}
       debounceTimeout={600}
+      additional={{
+        page: 1,
+      }}
       styles={{
         control: (base) => ({
           ...base,

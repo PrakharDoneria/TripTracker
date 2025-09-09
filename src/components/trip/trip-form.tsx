@@ -35,7 +35,7 @@ import { useTripStore } from "@/hooks/use-trip-store"
 import PlaceSearch, { type Place } from "./place-search"
 import { Textarea } from "../ui/textarea"
 import { transportationIcons } from "../icons"
-import { Destination } from "@/lib/location"
+import { Destination, GeoLocation } from "@/lib/location"
 import { Checkbox } from "../ui/checkbox"
 import Image from "next/image"
 
@@ -64,9 +64,10 @@ interface TripFormProps {
     trip?: Trip;
     onOriginChange?: (place: Destination | null) => void;
     onDestinationChange?: (place: Destination | null) => void;
+    initialOrigin?: Place | null;
 }
 
-export function TripForm({ trip, onOriginChange, onDestinationChange }: TripFormProps) {
+export function TripForm({ trip, onOriginChange, onDestinationChange, initialOrigin }: TripFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { trips, addTrip, updateTrip } = useTripStore();
@@ -79,6 +80,8 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
 
   const [originCoords, setOriginCoords] = useState<{lat: number, lon: number} | null>(trip?.originCoords || null);
   const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(trip?.destinationCoords || null);
+
+  const [originValue, setOriginValue] = useState<Place | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -148,14 +151,26 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
   useEffect(() => {
     if (trip) {
       form.reset(trip);
-      if (trip.originCoords) setOriginCoords(trip.originCoords);
+      if (trip.originCoords) {
+          setOriginCoords(trip.originCoords)
+          setOriginValue({label: trip.origin, value: trip.origin, ...trip.originCoords})
+      };
       if (trip.destinationCoords) setDestinationCoords(trip.destinationCoords);
     }
     // Cleanup camera on unmount
     return () => stopCamera();
   }, [trip, form, stopCamera]);
 
+  useEffect(() => {
+    if (initialOrigin) {
+        setOriginValue(initialOrigin);
+        handleOriginSelect(initialOrigin)
+    }
+  }, [initialOrigin]);
+
+
   const handleOriginSelect = (place: Place | null) => {
+    setOriginValue(place);
     if (place) {
       form.setValue('origin', place.label);
       const coords = { lat: place.lat, lon: place.lon };
@@ -342,7 +357,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
                     <PlaceSearch
                       instanceId="origin-search"
                       placeholder="e.g., Home"
-                      defaultValue={trip?.origin ? { label: trip.origin, value: trip.origin, lat: trip.originCoords?.lat || 0, lon: trip.originCoords?.lon || 0 } : undefined}
+                      value={originValue}
                       onPlaceSelect={handleOriginSelect}
                     />
                   </FormControl>
