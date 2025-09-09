@@ -40,8 +40,8 @@ import { Checkbox } from "../ui/checkbox"
 import Image from "next/image"
 
 const formSchema = z.object({
-  origin: z.string().min(2, "Origin is too short").max(100, "Origin is too long"),
-  destination: z.string().min(2, "Destination is too short").max(100, "Destination is too long"),
+  origin: z.string().min(2, "Origin is too short"),
+  destination: z.string().min(2, "Destination is too short"),
   startTime: z.date({ required_error: "Start time is required." }),
   endTime: z.date({ required_error: "End time is required." }),
   mode: z.enum(['walk', 'bike', 'car', 'bus', 'train'], { required_error: "Mode is required." }),
