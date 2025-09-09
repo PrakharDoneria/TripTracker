@@ -12,13 +12,14 @@ This project was developed to address the need for accurate transportation data 
 *   **Edit & Delete Trips**: Full control over your data with options to edit or delete any trip entry.
 *   **Travel Dashboard**: A dedicated dashboard page provides insights into your travel habits, including your most frequent destinations and a breakdown of transportation modes used.
 *   **User Consent**: The app ensures user privacy by requesting consent for data collection upon the first visit.
+*   **Data Export**: Allows users to securely export their trip data in a standardized format for NATPAC scientists.
 
 ## AI-Powered Intelligence
 
 TripTracker leverages Generative AI to provide a smarter user experience:
 
 *   **Assisted Data Capture**: Automatically detect the user's mode of transportation using sensor data mocks.
-*   **AI Trip Recommendations**: Get intelligent suggestions for the best mode of transport based on trip purpose, traffic, and weather conditions.
+*   **AI Trip Recommendations**: Get intelligent suggestions for the best mode of transport based on trip purpose, traffic, and weather conditions, with a focus on sustainability.
 *   **Contextual Nudges**: If you're unsure where you're headed, the app can provide a "travel nudge" with suggestions based on your recent destinations and current location.
 *   **CO₂ Emission Estimation**: Automatically calculates the estimated carbon footprint (in grams of CO₂e) for each trip, promoting environmentally conscious travel choices.
 
