@@ -3,11 +3,11 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, Route, StickyNote, Briefcase, ShoppingCart, FerrisWheel } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { transportationIcons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -97,18 +97,18 @@ export function TripCard({ trip }: TripCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow duration-300 relative group">
       <CardHeader className="pb-3 pr-20">
-        <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2 text-lg flex-wrap">
-            <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-            <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
-            <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-            <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.destination}>{trip.destination}</span>
-          </div>
-          <Badge variant="secondary" className="flex items-center gap-2 self-start sm:self-center">
-            <Icon className="h-4 w-4" />
-            <span className="font-normal capitalize">{trip.mode}</span>
-          </Badge>
-        </CardTitle>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg flex-wrap">
+                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
+                <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.destination}>{trip.destination}</span>
+            </CardTitle>
+            <Badge variant="secondary" className="flex items-center gap-2 self-start sm:self-center">
+                <Icon className="h-4 w-4" />
+                <span className="font-normal capitalize">{trip.mode}</span>
+            </Badge>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export function TripCard({ trip }: TripCardProps) {
         )}
       </CardContent>
 
-      <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-4 right-4 flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
         <Link href={`/trips/${trip.id}/edit`}>
             <Button variant="ghost" size="icon">
                 <Edit className="h-4 w-4" />
