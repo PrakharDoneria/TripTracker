@@ -18,7 +18,7 @@ const Routing = ({ trip }: { trip: Trip }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (!trip.originCoords || !trip.destinationCoords) {
+    if (!map || !trip.originCoords || !trip.destinationCoords) {
       return;
     }
 
@@ -38,7 +38,9 @@ const Routing = ({ trip }: { trip: Trip }) => {
     }).addTo(map);
 
     return () => {
-      map.removeControl(routingControl);
+      if (map && routingControl) {
+        map.removeControl(routingControl);
+      }
     };
   }, [map, trip]);
 
@@ -60,7 +62,7 @@ const Map = ({ trips }: MapProps) => {
         if (trip.originCoords) points.push([trip.originCoords.lat, trip.originCoords.lon] as L.LatLngExpression);
         if (trip.destinationCoords) points.push([trip.destinationCoords.lat, trip.destinationCoords.lon] as L.LatLngExpression);
         return points;
-      }).filter(p => p.length > 0))
+      }).filter(p => p && p.length > 0))
     : null;
 
   return (
