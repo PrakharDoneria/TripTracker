@@ -18,23 +18,31 @@ export default function Home() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the browser from automatically showing the prompt
       e.preventDefault();
+      // Stash the event so it can be triggered later.
       setInstallPrompt(e);
+      // Update the UI to show the install button
+      setIsAppInstalled(false); 
     };
 
-    const checkInstalledStatus = async () => {
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        setIsAppInstalled(true);
-      }
-    };
-
-    checkInstalledStatus();
+    // Check if the app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsAppInstalled(true);
+    }
+    
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', () => setIsAppInstalled(true));
+    
+    // Listen for the appinstalled event
+    const handleAppInstalled = () => {
+        setIsAppInstalled(true);
+        setInstallPrompt(null);
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', () => setIsAppInstalled(true));
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
