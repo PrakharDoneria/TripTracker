@@ -35,8 +35,12 @@ export function ConsentModal() {
     alert("You have declined consent. The app's functionality will be limited.");
   };
 
+  if (!isOpen) {
+    return null;
+  }
+
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="font-headline">We value your privacy</AlertDialogTitle>
@@ -51,7 +55,7 @@ export function ConsentModal() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <Button variant="outline" onClick={handleDecline}>Decline</Button>
-          <AlertDialogAction onClick={handleAccept}>Accept</Button>
+          <AlertDialogAction onClick={handleAccept}>Accept</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

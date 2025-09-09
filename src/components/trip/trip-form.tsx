@@ -23,7 +23,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import type { Trip, TransportationMode } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { smartTripDetection, NudgeForMissingDataInput, nudgeForMissingData } from "@/ai/flows"
+import { smartTripDetection } from "@/ai/flows/smart-trip-detection"
+import { nudgeForMissingData, type NudgeForMissingDataInput } from "@/ai/flows/nudge-for-missing-data"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
