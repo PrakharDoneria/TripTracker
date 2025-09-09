@@ -9,40 +9,6 @@ import { useEffect, useState } from 'react';
 
 export function Header() {
   const { trips } = useTripStore();
-  const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
-  const [isAppInstalled, setIsAppInstalled] = useState(false);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-
-    const checkInstalledStatus = async () => {
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        setIsAppInstalled(true);
-      }
-    };
-    
-    checkInstalledStatus();
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', () => setIsAppInstalled(true));
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', () => setIsAppInstalled(true));
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    (installPrompt as any).prompt();
-    const { outcome } = await (installPrompt as any).userChoice;
-    if (outcome === 'accepted') {
-      setIsAppInstalled(true);
-    }
-    setInstallPrompt(null);
-  };
 
   const handleExport = () => {
     try {
@@ -109,19 +75,6 @@ export function Header() {
               <span className="sr-only">Camera View</span>
             </Button>
           </Link>
-
-          {installPrompt && !isAppInstalled && (
-            <>
-                <Button onClick={handleInstallClick} variant="outline" size="sm" className="hidden sm:inline-flex bg-primary/10 border-primary/50 text-primary hover:text-primary">
-                    <Download className="mr-2 h-4 w-4" />
-                    Install App
-                </Button>
-                <Button onClick={handleInstallClick} variant="ghost" size="icon" className="sm:hidden text-primary">
-                    <Download className="h-5 w-5" />
-                    <span className="sr-only">Install App</span>
-                </Button>
-            </>
-          )}
 
           <Button onClick={handleExport} disabled={trips.length === 0} variant="outline" size="sm" className="hidden sm:inline-flex">
             <Download className="mr-2 h-4 w-4" />
