@@ -31,16 +31,17 @@ export default function PlaceSearch({ onPlaceSelect, placeholder }: PlaceSearchP
       }
       const response = await fetch(`${GEOAPIFY_URL}?text=${search}&apiKey=${GEOAPIFY_API_KEY}&limit=5&skip=${(page - 1) * 5}`);
       const data = await response.json();
-      const options = data.features.map((feature: any) => ({
+      
+      const options = Array.isArray(data.features) ? data.features.map((feature: any) => ({
         label: feature.properties.formatted,
         value: feature.properties.place_id,
         lat: feature.properties.lat,
         lon: feature.properties.lon,
-      }));
+      })) : [];
 
       return {
         options,
-        hasMore: data.features.length > 0,
+        hasMore: options.length > 0,
         additional: {
           page: page + 1,
         }
