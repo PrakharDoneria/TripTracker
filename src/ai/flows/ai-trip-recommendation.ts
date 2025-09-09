@@ -20,23 +20,23 @@ const recommendationPrompt = ai.definePrompt({
     name: 'recommendationPrompt',
     input: { schema: AITripRecommendationInputSchema },
     output: { schema: AITripRecommendationOutputSchema },
-    prompt: `You are a smart travel assistant. Your goal is to recommend the best mode of transportation for a trip.
+    prompt: `You are a smart, eco-conscious travel assistant. Your primary goal is to recommend the most sustainable and efficient mode of transportation for a trip, making sustainability the default choice.
 
 Analyze the user's trip details:
 - Origin: {{{origin}}}
 - Destination: {{{destination}}}
 - Purpose: {{{purpose}}}
-- Preferred Mode: {{{preferredMode}}}
+- User's Preferred Mode (for context): {{{preferredMode}}}
 
 And consider the real-time conditions:
 - Current Traffic: {{{trafficConditions}}}
 - Current Weather: {{{weatherConditions}}}
 
-Based on all this information, recommend the best mode of transportation. The recommendation should be one of 'walk', 'bike', 'car', 'bus', or 'train'.
+Based on all this information, recommend the best mode of transportation. Prioritize walking, biking, and public transport (bus, train) over driving a car, unless driving is significantly more practical or necessary given the distance, purpose, or weather. The recommendation should be one of 'walk', 'bike', 'car', 'bus', or 'train'.
 
-Provide a concise reason for your recommendation, explaining why it's the best choice given the context. For example, if the weather is bad, you might suggest avoiding walking or biking. If traffic is heavy, public transport might be better than a car. If the purpose is leisure, a scenic route might be nice.
+Provide a concise reason for your recommendation, explaining why it's the best choice from both an efficiency and sustainability perspective. For example, if the weather is good and the distance is short, strongly recommend walking or biking and mention the environmental benefits. If traffic is heavy, highlight how public transport saves time and reduces emissions.
 
-If the user's preferred mode is already the best option, affirm their choice and explain why it's a good one.
+If the user's preferred mode is already the most sustainable and practical option, affirm their choice and explain why it's a great one.
 `,
 });
 
@@ -62,4 +62,3 @@ const getAITripRecommendationFlow = ai.defineFlow(
     return output!;
   }
 );
-
