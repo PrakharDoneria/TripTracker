@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff } from "lucide-react"
+import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff, DollarSign } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -48,6 +48,7 @@ const formSchema = z.object({
   companions: z.coerce.number().int().min(0, "Cannot be negative").max(20, "Max 20 companions"),
   purpose: z.enum(['work', 'leisure', 'errands', 'other'], { required_error: "Purpose is required." }),
   notes: z.string().max(500, "Notes are too long").optional(),
+  expenses: z.coerce.number().min(0, "Cannot be negative").optional(),
   destinationImageUrl: z.string().optional(),
   isNicePlace: z.boolean().optional(),
 }).refine((data) => data.endTime > data.startTime, {
@@ -101,6 +102,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
       mode: 'car',
       purpose: 'other',
       notes: '',
+      expenses: 0,
       destinationImageUrl: '',
       isNicePlace: false,
     },
@@ -411,6 +413,18 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
             )} />
             <FormField control={form.control} name="companions" render={({ field }) => (
               <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="expenses" render={({ field }) => (
+                <FormItem>
+                <FormLabel>Trip Expenses</FormLabel>
+                <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <FormControl>
+                        <Input type="number" min="0" placeholder="0.00" className="pl-8" {...field} />
+                    </FormControl>
+                </div>
+                <FormMessage />
+                </FormItem>
             )} />
             <FormField
               control={form.control}

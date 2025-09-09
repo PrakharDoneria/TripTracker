@@ -101,3 +101,19 @@ export const AITripRecommendationOutputSchema = z.object({
     reason: z.string().describe("The reason for the recommendation."),
 });
 export type AITripRecommendationOutput = z.infer<typeof AITripRecommendationOutputSchema>;
+
+
+// Schemas for suggest-hidden-gem.ts
+export const SuggestHiddenGemInputSchema = z.object({
+    destinationName: z.string().describe("The name of the destination city or area."),
+    destinationCoords: LatLongSchema.describe("The geographic coordinates of the destination."),
+    tripPurpose: z.enum(['work', 'leisure', 'errands', 'other']).describe("The purpose of the trip to provide context."),
+});
+export type SuggestHiddenGemInput = z.infer<typeof SuggestHiddenGemInputSchema>;
+
+export const SuggestHiddenGemOutputSchema = z.object({
+    name: z.string().describe("The name of the suggested hidden gem."),
+    category: z.string().describe("The category of the place (e.g., Café, Park, Museum, Viewpoint)."),
+    reason: z.string().describe("A short, compelling reason why the user should visit this place, tailored to their trip context."),
+});
+export type SuggestHiddenGemOutput = z.infer<typeof SuggestHiddenGemOutputSchema>;

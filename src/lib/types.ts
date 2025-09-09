@@ -11,6 +11,7 @@ export interface Trip {
   companions: number;
   purpose: TripPurpose;
   notes?: string;
+  expenses?: number;
   originCoords?: { lat: number, lon: number };
   destinationCoords?: { lat: number, lon: number };
   destinationImageUrl?: string;
