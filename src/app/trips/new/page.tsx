@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Header } from "@/components/layout/header";
 import { TripForm } from "@/components/trip/trip-form";
@@ -14,7 +15,8 @@ const MapView = dynamic(() => import('@/components/map/map'), {
   ssr: false
 });
 
-export default function NewTripPage() {
+
+function NewTripForm() {
   const searchParams = useSearchParams();
   const [origin, setOrigin] = useState<Destination | null>(null);
   const [destination, setDestination] = useState<Destination | null>(null);
@@ -65,29 +67,37 @@ export default function NewTripPage() {
   }, [origin, destination]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
-      <Header />
-      <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
-        <div className="grid gap-8 lg:grid-cols-2">
-            <div>
-                <h2 className="text-2xl font-bold mb-4 font-headline text-foreground">Record a New Trip</h2>
-                <div className="lg:sticky lg:top-20">
-                    <TripForm 
-                        onOriginChange={setOrigin}
-                        onDestinationChange={setDestination}
-                        initialOrigin={initialOrigin}
-                        prefilledDestination={prefilledDestination}
-                        prefilledPurpose={prefilledPurpose as TripPurpose | null}
-                    />
-                </div>
-            </div>
-            <div className="rounded-lg overflow-hidden h-[400px] lg:h-auto lg:max-h-[calc(100vh-8rem)] lg:sticky lg:top-20">
-                <MapView 
-                    destinations={destinations}
-                    userLocation={userLocation}
+    <div className="grid gap-8 lg:grid-cols-2">
+        <div>
+            <h2 className="text-2xl font-bold mb-4 font-headline text-foreground">Record a New Trip</h2>
+            <div className="lg:sticky lg:top-20">
+                <TripForm 
+                    onOriginChange={setOrigin}
+                    onDestinationChange={setDestination}
+                    initialOrigin={initialOrigin}
+                    prefilledDestination={prefilledDestination}
+                    prefilledPurpose={prefilledPurpose as TripPurpose | null}
                 />
             </div>
         </div>
+        <div className="rounded-lg overflow-hidden h-[400px] lg:h-auto lg:max-h-[calc(100vh-8rem)] lg:sticky lg:top-20">
+            <MapView 
+                destinations={destinations}
+                userLocation={userLocation}
+            />
+        </div>
+    </div>
+  )
+}
+
+export default function NewTripPage() {
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-background">
+      <Header />
+      <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
+        <Suspense fallback={<div>Loading...</div>}>
+          <NewTripForm />
+        </Suspense>
       </main>
     </div>
   )
