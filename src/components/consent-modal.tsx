@@ -44,13 +44,15 @@ export function ConsentModal() {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="font-headline">We value your privacy</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-4">
-            <p>
-              To help improve transportation planning with NATPAC, this app collects trip data, including location and sensor information. This data will be shared anonymously with NATPAC scientists.
-            </p>
-            <p>
-              By clicking "Accept", you consent to the collection and sharing of your trip data for research purposes.
-            </p>
+          <AlertDialogDescription asChild>
+            <div className="space-y-4">
+              <p>
+                To help improve transportation planning with NATPAC, this app collects trip data, including location and sensor information. This data will be shared anonymously with NATPAC scientists.
+              </p>
+              <p>
+                By clicking "Accept", you consent to the collection and sharing of your trip data for research purposes.
+              </p>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
