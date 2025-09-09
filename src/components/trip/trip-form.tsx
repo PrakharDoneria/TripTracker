@@ -56,6 +56,9 @@ export function TripForm() {
   const [isNudging, setIsNudging] = useState(false);
   const [nudge, setNudge] = useState<string | null>(null);
 
+  const [originCoords, setOriginCoords] = useState<{lat: number, lon: number} | null>(null);
+  const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(null);
+
   const form = useForm<TripFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -68,23 +71,20 @@ export function TripForm() {
   });
 
   function onSubmit(data: TripFormValues) {
-    const tripData: Omit<Trip, 'id' | 'originCoords' | 'destinationCoords'> = {
-      ...data,
-      origin: form.getValues('origin'),
-      destination: form.getValues('destination'),
-    };
+    if (!originCoords || !destinationCoords) {
+      toast({
+        variant: 'destructive',
+        title: "Missing Coordinates",
+        description: "Please select a valid origin and destination from the search.",
+      });
+      return;
+    }
     
-    // The coordinates will be set in the place search component
-    // We just need to find a way to pass them here.
-    // For now, let's assume they are part of the form state or retrieved differently.
-    
-    const originOption = form.getValues('origin');
-    const destOption = form.getValues('destination');
-
     addTrip({
-        ...tripData,
+        ...data,
+        originCoords,
+        destinationCoords,
     });
-
 
     toast({
       title: "Trip Saved!",
@@ -168,9 +168,14 @@ export function TripForm() {
                       <FormLabel>Origin</FormLabel>
                       <FormControl>
                         <PlaceSearch
+                          instanceId="origin-search"
                           onPlaceSelect={(place) => {
                             if (place) {
                               field.onChange(place.label);
+                              setOriginCoords({ lat: place.lat, lon: place.lon });
+                            } else {
+                              field.onChange("");
+                              setOriginCoords(null);
                             }
                           }}
                           placeholder="e.g., Home"
@@ -188,9 +193,14 @@ export function TripForm() {
                       <FormLabel>Destination</FormLabel>
                       <FormControl>
                         <PlaceSearch
+                           instanceId="destination-search"
                            onPlaceSelect={(place) => {
                             if (place) {
                               field.onChange(place.label);
+                              setDestinationCoords({ lat: place.lat, lon: place.lon });
+                            } else {
+                              field.onChange("");
+                              setDestinationCoords(null);
                             }
                           }}
                           placeholder="e.g., Office"

@@ -15,9 +15,10 @@ interface Place {
 interface PlaceSearchProps {
   onPlaceSelect: (place: Place | null) => void;
   placeholder?: string;
+  instanceId?: string;
 }
 
-export default function PlaceSearch({ onPlaceSelect, placeholder }: PlaceSearchProps) {
+export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId }: PlaceSearchProps) {
   const [value, setValue] = useState<Place | null>(null);
 
   const loadOptions = async (search: string, loadedOptions: any, { page }: any) => {
@@ -65,6 +66,7 @@ export default function PlaceSearch({ onPlaceSelect, placeholder }: PlaceSearchP
       value={value}
       loadOptions={loadOptions}
       onChange={handleChange}
+      instanceId={instanceId}
       placeholder={placeholder || "Search for a place"}
       debounceTimeout={600}
       additional={{
