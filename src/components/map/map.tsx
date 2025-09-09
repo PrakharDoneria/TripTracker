@@ -18,7 +18,7 @@ const Routing = ({ trip }: { trip: Trip }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (!map || !trip.originCoords || !trip.destinationCoords) {
+    if (!trip.originCoords || !trip.destinationCoords) {
       return;
     }
 
@@ -38,9 +38,7 @@ const Routing = ({ trip }: { trip: Trip }) => {
     }).addTo(map);
 
     return () => {
-      if (map && routingControl) {
-        map.removeControl(routingControl);
-      }
+      map.removeControl(routingControl);
     };
   }, [map, trip]);
 
@@ -62,17 +60,17 @@ const Map = ({ trips }: MapProps) => {
         if (trip.originCoords) points.push([trip.originCoords.lat, trip.originCoords.lon] as L.LatLngExpression);
         if (trip.destinationCoords) points.push([trip.destinationCoords.lat, trip.destinationCoords.lon] as L.LatLngExpression);
         return points;
-      }))
+      }).filter(p => p.length > 0))
     : null;
 
   return (
-    <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }} bounds={bounds || undefined}>
+    <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }} bounds={bounds || undefined} >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       {trips.map(trip => (
-        <Routing key={trip.id} trip={trip} />
+        trip.originCoords && trip.destinationCoords && <Routing key={trip.id} trip={trip} />
       ))}
       {trips.map(trip => (
         trip.originCoords && (
