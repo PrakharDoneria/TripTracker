@@ -5,12 +5,13 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 import type { Trip } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { transportationIcons } from "../icons";
+import Image from "next/image";
 
 interface ModeChartProps {
     trips: Trip[];
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
+const COLORS = ['#0ea5e9', '#0d9488', '#f59e0b', '#f97316', '#8b5cf6'];
 
 export function ModeChart({ trips }: ModeChartProps) {
     const data = useMemo(() => {
@@ -22,68 +23,61 @@ export function ModeChart({ trips }: ModeChartProps) {
         return Object.entries(modeCounts).map(([name, value]) => ({ name, value }));
     }, [trips]);
 
-    if (data.length === 0) {
-        return (
-            <Card className="md:col-span-1 lg:col-span-1">
-                <CardHeader>
-                    <CardTitle>Transportation Modes</CardTitle>
-                    <CardDescription>No trips recorded yet.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center justify-center h-64">
-                    <p className="text-muted-foreground">Add trips to see your travel habits.</p>
-                </CardContent>
-            </Card>
-        )
-    }
-
     return (
-        <Card className="md:col-span-1 lg:col-span-1">
+        <Card className="col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
             <CardHeader>
-                <CardTitle>Transportation Modes</CardTitle>
-                <CardDescription>A breakdown of your travel methods.</CardDescription>
+                <CardTitle className="text-2xl font-bold">Transportation Modes</CardTitle>
+                <CardDescription>A complete breakdown of your travel methods and their efficiency.</CardDescription>
             </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                        <Pie
-                            data={data}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            label={(props) => {
-                                const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
-                                const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-                                const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-                                return (
-                                <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central">
-                                    {`${(percent * 100).toFixed(0)}%`}
-                                </text>
-                                );
-                            }}
-                        >
-                            {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => `${value} trips`} />
-                        <Legend
-                            formatter={(value, entry) => {
-                                const Icon = transportationIcons[value as keyof typeof transportationIcons];
-                                return (
-                                    <span className="flex items-center gap-2 capitalize">
-                                        {Icon && <Icon className="h-4 w-4" />}
-                                        {value}
-                                    </span>
-                                )
-                            }}
-                        />
-                    </PieChart>
-                </ResponsiveContainer>
+            <CardContent className="flex-1 flex items-center justify-center p-6">
+                 {data.length === 0 ? (
+                    <p className="text-muted-foreground">Add trips to see your travel habits.</p>
+                ) : (
+                    <div className="w-full h-full relative">
+                        <Image src="https://picsum.photos/400/300" data-ai-hint="transportation collage" alt="Transportation modes" layout="fill" className="object-cover rounded-lg" />
+                        <div className="absolute inset-0 bg-black/60 rounded-lg p-4 flex items-center justify-center">
+                            <ResponsiveContainer width="100%" height={250}>
+                                <PieChart>
+                                    <Pie
+                                        data={data}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={false}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                        nameKey="name"
+                                        stroke="hsl(var(--background))"
+                                        label={(props) => {
+                                            const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
+                                            const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                                            const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+                                            const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+                                            return (
+                                            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" className="font-bold text-xs">
+                                                {`${(percent * 100).toFixed(0)}%`}
+                                            </text>
+                                            );
+                                        }}
+                                    >
+                                        {data.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        formatter={(value) => `${value} trips`}
+                                        contentStyle={{
+                                            background: 'hsl(var(--background) / 0.8)',
+                                            borderColor: 'hsl(var(--border))',
+                                            borderRadius: 'var(--radius)'
+                                        }}
+                                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

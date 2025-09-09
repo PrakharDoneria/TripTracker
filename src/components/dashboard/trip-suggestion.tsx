@@ -9,6 +9,7 @@ import { Loader2, Lightbulb, ArrowRight, Bot } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { suggestNextTrip } from '@/ai/flows/suggest-next-trip';
 import type { SuggestNextTripOutput } from '@/ai/schemas';
+import Image from 'next/image';
 
 interface TripSuggestionProps {
   trips: Trip[];
@@ -22,7 +23,6 @@ export function TripSuggestion({ trips }: TripSuggestionProps) {
   useEffect(() => {
     const getSuggestion = async () => {
       if (trips.length < 2) {
-        // Not enough data for a meaningful suggestion
         return;
       }
       setIsLoading(true);
@@ -49,48 +49,47 @@ export function TripSuggestion({ trips }: TripSuggestionProps) {
   }, [trips]);
 
   return (
-    <Card className="md:col-span-2 lg:col-span-1">
+    <Card className="col-span-1 lg:col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-            <Bot />
-            AI Trip Suggestion
-        </CardTitle>
-        <CardDescription>Based on your recent travel patterns.</CardDescription>
+        <CardTitle className="text-2xl font-bold">AI Trip Suggestion</CardTitle>
+        <CardDescription>Intelligent predictions based on your unique travel patterns.</CardDescription>
       </CardHeader>
-      <CardContent className="h-64 flex flex-col items-center justify-center">
-        {isLoading && (
-          <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <p>Analyzing your trips...</p>
-          </div>
-        )}
+      <CardContent className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="w-full h-full relative">
+            <Image src="https://picsum.photos/400/400" data-ai-hint="futuristic interface" alt="AI suggestion background" layout="fill" className="object-cover rounded-lg" />
+            <div className="absolute inset-0 bg-black/60 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                {isLoading && (
+                    <div className="flex flex-col items-center gap-2 text-white/80">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <p>Analyzing your trips...</p>
+                    </div>
+                )}
 
-        {!isLoading && error && (
-          <p className="text-destructive text-center">{error}</p>
-        )}
-        
-        {!isLoading && !error && !suggestion && (
-             <p className="text-muted-foreground text-center">Not enough trip data to make a suggestion. Add a few more trips!</p>
-        )}
+                {!isLoading && error && (
+                    <p className="text-destructive">{error}</p>
+                )}
+                
+                {!isLoading && !error && !suggestion && (
+                    <p className="text-white/80">Not enough trip data. Add more trips for a suggestion!</p>
+                )}
 
-        {!isLoading && suggestion && (
-          <div className="w-full text-center space-y-4">
-             <Alert>
-                <Lightbulb className="h-4 w-4" />
-                <AlertTitle>Suggestion</AlertTitle>
-                <AlertDescription>{suggestion.reason}</AlertDescription>
-            </Alert>
-            <div className="mt-4">
-                <p className="text-lg font-semibold">{suggestion.suggestedDestination}</p>
-                <p className="text-muted-foreground capitalize">{suggestion.suggestedPurpose}</p>
+                {!isLoading && suggestion && (
+                    <div className="space-y-4">
+                        <Lightbulb className="h-10 w-10 text-primary mx-auto" />
+                        <p className="font-semibold text-white/90">{suggestion.reason}</p>
+                        <div className="mt-4">
+                            <p className="text-2xl font-bold text-white">{suggestion.suggestedDestination}</p>
+                            <p className="text-primary capitalize font-medium">{suggestion.suggestedPurpose}</p>
+                        </div>
+                        <Link href={`/trips/new?destination=${encodeURIComponent(suggestion.suggestedDestination)}&purpose=${encodeURIComponent(suggestion.suggestedPurpose)}`}>
+                            <Button variant="secondary" className="mt-4">
+                                Start this trip <ArrowRight className="ml-2"/>
+                            </Button>
+                        </Link>
+                    </div>
+                )}
             </div>
-            <Link href={`/trips/new?destination=${encodeURIComponent(suggestion.suggestedDestination)}&purpose=${encodeURIComponent(suggestion.suggestedPurpose)}`}>
-                <Button>
-                    Start this trip <ArrowRight className="ml-2"/>
-                </Button>
-            </Link>
-          </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
