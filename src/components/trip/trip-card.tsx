@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Clock, MapPin, Users } from 'lucide-react';
 import type { Trip } from '@/lib/types';
@@ -11,6 +15,17 @@ interface TripCardProps {
 
 export function TripCard({ trip }: TripCardProps) {
   const Icon = transportationIcons[trip.mode];
+  const [formattedTime, setFormattedTime] = useState('');
+
+  useEffect(() => {
+    // Format the time on the client to avoid hydration mismatch
+    setFormattedTime(
+      `${format(trip.startTime, 'MMM d, yyyy, h:mm a')} - ${format(
+        trip.endTime,
+        'h:mm a'
+      )}`
+    );
+  }, [trip.startTime, trip.endTime]);
   
   return (
     <Card className="hover:shadow-md transition-shadow duration-300">
@@ -32,7 +47,7 @@ export function TripCard({ trip }: TripCardProps) {
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
           <span>
-            {format(trip.startTime, 'MMM d, yyyy, h:mm a')} - {format(trip.endTime, 'h:mm a')}
+            {formattedTime || 'Loading...'}
           </span>
         </div>
         {trip.companions > 0 && (
