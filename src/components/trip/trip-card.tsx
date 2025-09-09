@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { transportationIcons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { useTripStore } from '@/hooks/use-trip-store';
 import { useToast } from '@/hooks/use-toast';
 import { estimateCO2 } from '@/ai/flows/co2-estimation';
+import Image from 'next/image';
 
 interface TripCardProps {
   trip: Trip;
@@ -95,53 +96,74 @@ export function TripCard({ trip }: TripCardProps) {
   }, [trip.id]);
   
   return (
-    <Card className="hover:shadow-md transition-shadow duration-300 relative group">
-      <CardHeader className="pb-3 pr-20">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <CardTitle className="flex items-center gap-2 text-lg flex-wrap">
-                <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-                <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
-                <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-                <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.destination}>{trip.destination}</span>
-            </CardTitle>
-            <Badge variant="secondary" className="flex items-center gap-2 self-start sm:self-center">
-                <Icon className="h-4 w-4" />
-                <span className="font-normal capitalize">{trip.mode}</span>
-            </Badge>
+    <Card className="hover:shadow-md transition-shadow duration-300 relative group flex flex-col md:flex-row">
+      {trip.destinationImageUrl && (
+        <div className="md:w-1/3 relative h-48 md:h-auto">
+          <Image 
+            src={trip.destinationImageUrl}
+            alt={`Image of ${trip.destination}`}
+            fill
+            className="object-cover rounded-t-lg md:rounded-l-lg md:rounded-t-none"
+            sizes="(max-width: 768px) 100vw, 33vw"
+          />
         </div>
-      </CardHeader>
-      <CardContent className="grid gap-2 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4" />
-          <span>
-            {formattedTime || 'Loading...'}
-          </span>
-        </div>
-        {trip.companions > 0 && (
+      )}
+      <div className="flex-1">
+        <CardHeader className="pb-3 pr-20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg flex-wrap">
+                  <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.destination}>{trip.destination}</span>
+              </CardTitle>
+              <Badge variant="secondary" className="flex items-center gap-2 self-start sm:self-center">
+                  <Icon className="h-4 w-4" />
+                  <span className="font-normal capitalize">{trip.mode}</span>
+              </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>{trip.companions} companion{trip.companions > 1 ? 's' : ''}</span>
+            <Clock className="h-4 w-4" />
+            <span>
+              {formattedTime || 'Loading...'}
+            </span>
           </div>
-        )}
-        {trip.purpose && (
-          <div className="flex items-center gap-2">
-            <PurposeIcon className="h-4 w-4" />
-            <span className="capitalize">{trip.purpose}</span>
+          <div className='flex items-center gap-4 flex-wrap'>
+            {trip.companions > 0 && (
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span>{trip.companions} companion{trip.companions > 1 ? 's' : ''}</span>
+              </div>
+            )}
+            {trip.purpose && (
+              <div className="flex items-center gap-2">
+                <PurposeIcon className="h-4 w-4" />
+                <span className="capitalize">{trip.purpose}</span>
+              </div>
+            )}
+            {co2 !== null && (
+                <div className="flex items-center gap-2">
+                    <Leaf className="h-4 w-4 text-green-600" />
+                    <span>~{co2.toFixed(0)}g CO₂e</span>
+                </div>
+            )}
+            {trip.isNicePlace && (
+              <div className="flex items-center gap-2 text-yellow-500">
+                <Star className="h-4 w-4" />
+                <span>Nice place to visit</span>
+              </div>
+            )}
           </div>
-        )}
-        {trip.notes && (
-          <div className="flex items-start gap-2">
-            <StickyNote className="h-4 w-4 mt-1" />
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{trip.notes}</p>
-          </div>
-        )}
-        {co2 !== null && (
-            <div className="flex items-center gap-2">
-                <Leaf className="h-4 w-4 text-green-600" />
-                <span>~{co2.toFixed(0)}g CO₂e</span>
+          {trip.notes && (
+            <div className="flex items-start gap-2 pt-2">
+              <StickyNote className="h-4 w-4 mt-1 shrink-0" />
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{trip.notes}</p>
             </div>
-        )}
-      </CardContent>
+          )}
+        </CardContent>
+      </div>
 
       <div className="absolute top-4 right-4 flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
         <Link href={`/trips/${trip.id}/edit`}>

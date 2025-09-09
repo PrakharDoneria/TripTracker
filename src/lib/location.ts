@@ -5,4 +5,5 @@ export interface GeoLocation {
 
 export interface Destination extends GeoLocation {
     name: string;
+    isNicePlace?: boolean;
 }

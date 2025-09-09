@@ -1,12 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot } from "lucide-react"
+import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, ImageIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -36,6 +36,7 @@ import PlaceSearch, { type Place } from "./place-search"
 import { Textarea } from "../ui/textarea"
 import { transportationIcons } from "../icons"
 import { Destination } from "@/lib/location"
+import { Checkbox } from "../ui/checkbox"
 
 
 const formSchema = z.object({
@@ -47,6 +48,8 @@ const formSchema = z.object({
   companions: z.coerce.number().int().min(0, "Cannot be negative").max(20, "Max 20 companions"),
   purpose: z.enum(['work', 'leisure', 'errands', 'other'], { required_error: "Purpose is required." }),
   notes: z.string().max(500, "Notes are too long").optional(),
+  destinationImageUrl: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
+  isNicePlace: z.boolean().optional(),
 }).refine((data) => data.endTime > data.startTime, {
   message: "End time must be after start time.",
   path: ["endTime"],
@@ -90,6 +93,8 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
       mode: 'car',
       purpose: 'other',
       notes: '',
+      destinationImageUrl: '',
+      isNicePlace: false,
     },
   });
 
@@ -343,6 +348,44 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
             <FormField control={form.control} name="companions" render={({ field }) => (
               <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
+            <FormField
+              control={form.control}
+              name="destinationImageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Destination Image</FormLabel>
+                  <FormControl>
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      <Input placeholder="https://example.com/image.png" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isNicePlace"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Nice place to visit
+                    </FormLabel>
+                    <FormDescription>
+                      Get a vibration alert when you're about to arrive.
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
             <FormField
                 control={form.control}
                 name="notes"
