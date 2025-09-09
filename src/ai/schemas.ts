@@ -117,3 +117,17 @@ export const SuggestHiddenGemOutputSchema = z.object({
     reason: z.string().describe("A short, compelling reason why the user should visit this place, tailored to their trip context."),
 });
 export type SuggestHiddenGemOutput = z.infer<typeof SuggestHiddenGemOutputSchema>;
+
+// Schemas for suggest-next-trip.ts
+export const SuggestNextTripInputSchema = z.object({
+  recentTrips: z.array(RecentTripSchema).describe('A list of the last 5 trips to provide context for the suggestion.'),
+  currentLocation: z.string().optional().describe('The user\'s current location, if available.'),
+});
+export type SuggestNextTripInput = z.infer<typeof SuggestNextTripInputSchema>;
+
+export const SuggestNextTripOutputSchema = z.object({
+  suggestedDestination: z.string().describe("The suggested destination for the next trip."),
+  suggestedPurpose: z.string().describe("The suggested purpose for the next trip (e.g., work, leisure, errands)."),
+  reason: z.string().describe("A short, compelling reason for the suggestion based on the user's travel patterns."),
+});
+export type SuggestNextTripOutput = z.infer<typeof SuggestNextTripOutputSchema>;

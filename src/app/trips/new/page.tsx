@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Header } from "@/components/layout/header";
 import { TripForm } from "@/components/trip/trip-form";
 import dynamic from "next/dynamic";
 import type { Destination, GeoLocation } from '@/lib/location';
 import type { Place } from '@/components/trip/place-search';
+import type { TripPurpose } from '@/lib/types';
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <div className="h-[400px] bg-muted rounded-lg animate-pulse" />,
@@ -13,10 +15,14 @@ const MapView = dynamic(() => import('@/components/map/map'), {
 });
 
 export default function NewTripPage() {
+  const searchParams = useSearchParams();
   const [origin, setOrigin] = useState<Destination | null>(null);
   const [destination, setDestination] = useState<Destination | null>(null);
   const [userLocation, setUserLocation] = useState<GeoLocation | null>(null);
   const [initialOrigin, setInitialOrigin] = useState<Place | null>(null);
+
+  const prefilledDestination = searchParams.get('destination');
+  const prefilledPurpose = searchParams.get('purpose');
 
 
   useEffect(() => {
@@ -70,6 +76,8 @@ export default function NewTripPage() {
                         onOriginChange={setOrigin}
                         onDestinationChange={setDestination}
                         initialOrigin={initialOrigin}
+                        prefilledDestination={prefilledDestination}
+                        prefilledPurpose={prefilledPurpose as TripPurpose | null}
                     />
                 </div>
             </div>

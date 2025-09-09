@@ -66,9 +66,11 @@ interface TripFormProps {
     onOriginChange?: (place: Destination | null) => void;
     onDestinationChange?: (place: Destination | null) => void;
     initialOrigin?: Place | null;
+    prefilledDestination?: string | null;
+    prefilledPurpose?: TripPurpose | null;
 }
 
-export function TripForm({ trip, onOriginChange, onDestinationChange, initialOrigin }: TripFormProps) {
+export function TripForm({ trip, onOriginChange, onDestinationChange, initialOrigin, prefilledDestination, prefilledPurpose }: TripFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { trips, addTrip, updateTrip } = useTripStore();
@@ -83,6 +85,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
   const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(trip?.destinationCoords || null);
 
   const [originValue, setOriginValue] = useState<Place | null>(null)
+  const [destinationValue, setDestinationValue] = useState<Place | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -95,12 +98,12 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
         ...trip,
     } : {
       origin: "",
-      destination: "",
+      destination: prefilledDestination || "",
       companions: 0,
       startTime: new Date(),
       endTime: new Date(new Date().getTime() + 60 * 60 * 1000), // 1 hour later
       mode: 'car',
-      purpose: 'other',
+      purpose: prefilledPurpose || 'other',
       notes: '',
       expenses: 0,
       destinationImageUrl: '',
@@ -157,7 +160,10 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
           setOriginCoords(trip.originCoords)
           setOriginValue({label: trip.origin, value: trip.origin, ...trip.originCoords})
       };
-      if (trip.destinationCoords) setDestinationCoords(trip.destinationCoords);
+      if (trip.destinationCoords) {
+        setDestinationCoords(trip.destinationCoords)
+        setDestinationValue({label: trip.destination, value: trip.destination, ...trip.destinationCoords})
+      };
     }
     // Cleanup camera on unmount
     return () => stopCamera();
@@ -169,6 +175,16 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
         handleOriginSelect(initialOrigin)
     }
   }, [initialOrigin]);
+
+  useEffect(() => {
+    if (prefilledDestination) {
+        setDestinationValue({label: prefilledDestination, value: prefilledDestination, lat:0, lon: 0});
+        form.setValue('destination', prefilledDestination);
+    }
+    if (prefilledPurpose) {
+        form.setValue('purpose', prefilledPurpose);
+    }
+  }, [prefilledDestination, prefilledPurpose, form]);
 
 
   const handleOriginSelect = (place: Place | null) => {
@@ -186,6 +202,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
   }
 
   const handleDestinationSelect = (place: Place | null) => {
+    setDestinationValue(place);
     if (place) {
       form.setValue('destination', place.label);
       const coords = { lat: place.lat, lon: place.lon };
@@ -330,7 +347,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
             description: "Could not get an AI recommendation at this time.",
         });
     } finally {
-        setIsRecommending(false);
+      setIsRecommending(false);
     }
   };
 
@@ -377,7 +394,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
                     <PlaceSearch
                        instanceId="destination-search"
                        placeholder="e.g., Office"
-                       defaultValue={trip?.destination ? { label: trip.destination, value: trip.destination, lat: trip.destinationCoords?.lat || 0, lon: trip.destinationCoords?.lon || 0 } : undefined}
+                       value={destinationValue}
                        onPlaceSelect={handleDestinationSelect}
                     />
                   </FormControl>
