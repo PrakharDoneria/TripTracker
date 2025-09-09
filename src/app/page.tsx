@@ -74,11 +74,16 @@ export default function Home() {
           <TripList trips={trips} />
         </main>
         {installPrompt && !isAppInstalled && (
-          <div className="fixed bottom-4 right-4 z-50">
-            <Button onClick={handleInstallClick} size="lg" className="rounded-full shadow-lg">
-              <Download className="mr-2" />
-              Install App
-            </Button>
+           <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t p-4 shadow-lg md:hidden">
+              <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <p className="text-sm text-center sm:text-left text-card-foreground">
+                      Get the full app experience!
+                  </p>
+                  <Button onClick={handleInstallClick} size="lg" className="w-full sm:w-auto">
+                      <Download className="mr-2" />
+                      Install App
+                  </Button>
+              </div>
           </div>
         )}
       </div>
