@@ -44,22 +44,27 @@ export const useTripStore = create<TripState>()(
     }),
     {
       name: 'trip-storage', 
-      storage: createJSONStorage(() => localStorage), 
-       serialize: (state) => JSON.stringify(state, (key, value) => {
-        if (value instanceof Date) {
-          return value.toISOString();
-        }
-        return value;
+      storage: createJSONStorage(() => localStorage, {
+        serializer: {
+          stringify: (obj) => JSON.stringify(obj, (key, value) => {
+            if (value instanceof Date) {
+              return value.toISOString();
+            }
+            return value;
+          }),
+          parse: (str) => {
+            const parsed = JSON.parse(str);
+            if (parsed.state && Array.isArray(parsed.state.trips)) {
+              parsed.state.trips = parsed.state.trips.map((trip: any) => ({
+                ...trip,
+                startTime: new Date(trip.startTime),
+                endTime: new Date(trip.endTime),
+              }));
+            }
+            return parsed;
+          },
+        },
       }),
-      deserialize: (str) => {
-        const state = JSON.parse(str);
-        state.state.trips = state.state.trips.map((trip: Trip) => ({
-          ...trip,
-          startTime: new Date(trip.startTime),
-          endTime: new Date(trip.endTime),
-        }));
-        return state;
-      },
     }
   )
 )
