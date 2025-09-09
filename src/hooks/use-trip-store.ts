@@ -3,33 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Trip } from '@/lib/types';
 
-const initialTrips: Trip[] = [
-  {
-    id: '1',
-    origin: 'NATPAC, Akkulam',
-    destination: 'Technopark',
-    startTime: new Date(new Date().setDate(new Date().getDate() - 1)),
-    endTime: new Date(new Date(new Date().setDate(new Date().getDate() - 1)).setHours(new Date().getHours() + 1)),
-    mode: 'car',
-    companions: 1,
-    purpose: 'work',
-    notes: 'Meeting with the client',
-    originCoords: { lat: 8.535, lon: 76.906 },
-    destinationCoords: { lat: 8.556, lon: 76.882 },
-  },
-  {
-    id: '2',
-    origin: 'Home',
-    destination: 'Office',
-    startTime: new Date(new Date().setDate(new Date().getDate() - 2)),
-    endTime: new Date(new Date(new Date().setDate(new Date().getDate() - 2)).setHours(new Date().getHours() + 1)),
-    mode: 'bus',
-    purpose: 'work',
-    companions: 0,
-    originCoords: { lat: 8.5241, lon: 76.9366 },
-    destinationCoords: { lat: 8.556, lon: 76.882 },
-  },
-];
+const initialTrips: Trip[] = [];
 
 interface TripState {
   trips: Trip[];
