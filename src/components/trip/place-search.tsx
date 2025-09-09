@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState } from 'react';
@@ -21,7 +22,7 @@ interface PlaceSearchProps {
 export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId }: PlaceSearchProps) {
   const [value, setValue] = useState<Place | null>(null);
 
-  const loadOptions = async (search: string, loadedOptions: any, { page }: any) => {
+  const loadOptions = async (search: string, loadedOptions: any) => {
     try {
       if (!GEOAPIFY_API_KEY) {
         console.error("Geoapify API key is not set.");
@@ -30,7 +31,7 @@ export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId }: 
           hasMore: false,
         }
       }
-      const response = await fetch(`${GEOAPIFY_URL}?text=${search}&apiKey=${GEOAPIFY_API_KEY}&limit=5&skip=${(page - 1) * 5}`);
+      const response = await fetch(`${GEOAPIFY_URL}?text=${search}&apiKey=${GEOAPIFY_API_KEY}&limit=5&skip=${loadedOptions.length}`);
       const data = await response.json();
       
       const options = Array.isArray(data.features) ? data.features.map((feature: any) => ({
@@ -43,9 +44,6 @@ export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId }: 
       return {
         options,
         hasMore: options.length > 0,
-        additional: {
-          page: page + 1,
-        }
       };
     } catch (error) {
       console.error(error);
@@ -69,9 +67,6 @@ export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId }: 
       instanceId={instanceId}
       placeholder={placeholder || "Search for a place"}
       debounceTimeout={600}
-      additional={{
-        page: 1,
-      }}
       styles={{
         control: (base) => ({
           ...base,
