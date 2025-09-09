@@ -32,9 +32,10 @@ import type { NudgeForMissingDataInput, AITripRecommendationOutput } from "@/ai/
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useTripStore } from "@/hooks/use-trip-store"
-import PlaceSearch from "./place-search"
+import PlaceSearch, { type Place } from "./place-search"
 import { Textarea } from "../ui/textarea"
 import { transportationIcons } from "../icons"
+import { Destination } from "@/lib/location"
 
 
 const formSchema = z.object({
@@ -58,9 +59,11 @@ const tripPurposes: TripPurpose[] = ['work', 'leisure', 'errands', 'other'];
 
 interface TripFormProps {
     trip?: Trip;
+    onOriginChange?: (place: Destination | null) => void;
+    onDestinationChange?: (place: Destination | null) => void;
 }
 
-export function TripForm({ trip }: TripFormProps) {
+export function TripForm({ trip, onOriginChange, onDestinationChange }: TripFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { trips, addTrip, updateTrip } = useTripStore();
@@ -70,7 +73,6 @@ export function TripForm({ trip }: TripFormProps) {
   const [nudge, setNudge] = useState<string | null>(null);
   const [isRecommending, setIsRecommending] = useState(false);
   const [recommendation, setRecommendation] = useState<AITripRecommendationOutput | null>(null);
-
 
   const [originCoords, setOriginCoords] = useState<{lat: number, lon: number} | null>(trip?.originCoords || null);
   const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(trip?.destinationCoords || null);
@@ -99,6 +101,32 @@ export function TripForm({ trip }: TripFormProps) {
     }
   }, [trip, form]);
 
+  const handleOriginSelect = (place: Place | null) => {
+    if (place) {
+      form.setValue('origin', place.label);
+      const coords = { lat: place.lat, lon: place.lon };
+      setOriginCoords(coords);
+      onOriginChange?.({ latitude: place.lat, longitude: place.lon, name: place.label });
+    } else {
+      form.setValue('origin', '');
+      setOriginCoords(null);
+      onOriginChange?.(null);
+    }
+  }
+
+  const handleDestinationSelect = (place: Place | null) => {
+    if (place) {
+      form.setValue('destination', place.label);
+      const coords = { lat: place.lat, lon: place.lon };
+      setDestinationCoords(coords);
+      onDestinationChange?.({ latitude: place.lat, longitude: place.lon, name: place.label });
+    } else {
+      form.setValue('destination', '');
+      setDestinationCoords(null);
+      onDestinationChange?.(null);
+    }
+  }
+
   function onSubmit(data: TripFormValues) {
     if (!originCoords || !destinationCoords) {
       toast({
@@ -119,6 +147,7 @@ export function TripForm({ trip }: TripFormProps) {
             title: "Trip Updated!",
             description: "Your trip has been successfully updated.",
         });
+        router.push('/');
     } else {
         addTrip({
             ...data,
@@ -129,8 +158,8 @@ export function TripForm({ trip }: TripFormProps) {
           title: "Trip Saved!",
           description: "Your new trip has been added to your trip chain.",
         });
+        router.push('/');
     }
-    router.push('/');
   }
 
   const handleAutoDetect = async () => {
@@ -245,148 +274,145 @@ export function TripForm({ trip }: TripFormProps) {
     setRecommendation(null);
   };
 
+  const cardContent = (
+    <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="origin"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Origin</FormLabel>
+                  <FormControl>
+                    <PlaceSearch
+                      instanceId="origin-search"
+                      placeholder="e.g., Home"
+                      defaultValue={trip?.origin ? { label: trip.origin, value: trip.origin, lat: trip.originCoords?.lat || 0, lon: trip.originCoords?.lon || 0 } : undefined}
+                      onPlaceSelect={handleOriginSelect}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="destination"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Destination</FormLabel>
+                  <FormControl>
+                    <PlaceSearch
+                       instanceId="destination-search"
+                       placeholder="e.g., Office"
+                       defaultValue={trip?.destination ? { label: trip.destination, value: trip.destination, lat: trip.destinationCoords?.lat || 0, lon: trip.destinationCoords?.lon || 0 } : undefined}
+                       onPlaceSelect={handleDestinationSelect}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField control={form.control} name="startTime" render={({ field }) => (
+              <FormItem className="flex flex-col"><FormLabel>Start Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="endTime" render={({ field }) => (
+              <FormItem className="flex flex-col"><FormLabel>End Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
+            )} />
+            <FormField control={form.control} name="mode" render={({ field }) => (
+              <FormItem><FormLabel>Mode of Transport</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}><FormControl>
+                  <SelectTrigger><SelectValue placeholder="Select a mode" /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    {transportationModes.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
+                  </SelectContent>
+                </Select><FormMessage />
+              </FormItem>
+            )} />
+             <FormField control={form.control} name="purpose" render={({ field }) => (
+              <FormItem><FormLabel>Purpose</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}><FormControl>
+                  <SelectTrigger><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    {tripPurposes.map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}
+                  </SelectContent>
+                </Select><FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="companions" render={({ field }) => (
+              <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
+            )} />
+            <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                        <Textarea
+                        placeholder="Add any notes about your trip..."
+                        className="resize-none"
+                        {...field}
+                        />
+                    </FormControl>
+                    <FormDescription>
+                        You can add details like ticket numbers, reminders, or observations.
+                    </FormDescription>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+          </div>
+          <Button type="submit" className="w-full transition-transform active:scale-[0.98]">{trip ? 'Update Trip' : 'Save Trip'}</Button>
+        </form>
+      </Form>
+  );
+
+  const aiFeatures = !trip && (
+    <div className="mt-6 space-y-4">
+        <Button variant="outline" className="w-full" onClick={handleAutoDetect} disabled={isDetecting}>
+        {isDetecting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+        Assisted Data Capture
+        </Button>
+
+        <Button variant="secondary" className="w-full" onClick={handleRecommendation} disabled={isRecommending}>
+            {isRecommending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
+            Get AI Recommendation
+        </Button>
+        
+        <Button variant="ghost" className="w-full text-primary hover:text-primary hover:bg-accent/50" onClick={handleNudge} disabled={isNudging}>
+        {isNudging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4" />}
+        Get a Travel Nudge
+        </Button>
+
+        {nudge && (
+        <Alert>
+            <Lightbulb className="h-4 w-4" />
+            <AlertTitle>Suggestion</AlertTitle>
+            <AlertDescription>{nudge}</AlertDescription>
+        </Alert>
+        )}
+    </div>
+  );
+
   return (
     <>
-      <Card>
-        <CardContent className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="origin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Origin</FormLabel>
-                      <FormControl>
-                        <PlaceSearch
-                          instanceId="origin-search"
-                          placeholder="e.g., Home"
-                          defaultValue={trip?.origin ? { label: trip.origin, value: trip.origin, lat: trip.originCoords?.lat || 0, lon: trip.originCoords?.lon || 0 } : undefined}
-                          onPlaceSelect={(place) => {
-                            if (place) {
-                              field.onChange(place.label);
-                              setOriginCoords({ lat: place.lat, lon: place.lon });
-                            } else {
-                              field.onChange("");
-                              setOriginCoords(null);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="destination"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Destination</FormLabel>
-                      <FormControl>
-                        <PlaceSearch
-                           instanceId="destination-search"
-                           placeholder="e.g., Office"
-                           defaultValue={trip?.destination ? { label: trip.destination, value: trip.destination, lat: trip.destinationCoords?.lat || 0, lon: trip.destinationCoords?.lon || 0 } : undefined}
-                           onPlaceSelect={(place) => {
-                            if (place) {
-                              field.onChange(place.label);
-                              setDestinationCoords({ lat: place.lat, lon: place.lon });
-                            } else {
-                              field.onChange("");
-                              setDestinationCoords(null);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField control={form.control} name="startTime" render={({ field }) => (
-                  <FormItem className="flex flex-col"><FormLabel>Start Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="endTime" render={({ field }) => (
-                  <FormItem className="flex flex-col"><FormLabel>End Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="mode" render={({ field }) => (
-                  <FormItem><FormLabel>Mode of Transport</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}><FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a mode" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {transportationModes.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
-                      </SelectContent>
-                    </Select><FormMessage />
-                  </FormItem>
-                )} />
-                 <FormField control={form.control} name="purpose" render={({ field }) => (
-                  <FormItem><FormLabel>Purpose</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}><FormControl>
-                      <SelectTrigger><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {tripPurposes.map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}
-                      </SelectContent>
-                    </Select><FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="companions" render={({ field }) => (
-                  <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Notes</FormLabel>
-                        <FormControl>
-                            <Textarea
-                            placeholder="Add any notes about your trip..."
-                            className="resize-none"
-                            {...field}
-                            />
-                        </FormControl>
-                        <FormDescription>
-                            You can add details like ticket numbers, reminders, or observations.
-                        </FormDescription>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-              </div>
-              <Button type="submit" className="w-full transition-transform active:scale-[0.98]">{trip ? 'Update Trip' : 'Save Trip'}</Button>
-            </form>
-          </Form>
-          
-          {!trip && (
-            <div className="mt-6 space-y-4">
-                <Button variant="outline" className="w-full" onClick={handleAutoDetect} disabled={isDetecting}>
-                {isDetecting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                Assisted Data Capture
-                </Button>
-
-                <Button variant="secondary" className="w-full" onClick={handleRecommendation} disabled={isRecommending}>
-                    {isRecommending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
-                    Get AI Recommendation
-                </Button>
-                
-                <Button variant="ghost" className="w-full text-primary hover:text-primary hover:bg-accent/50" onClick={handleNudge} disabled={isNudging}>
-                {isNudging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4" />}
-                Get a Travel Nudge
-                </Button>
-
-                {nudge && (
-                <Alert>
-                    <Lightbulb className="h-4 w-4" />
-                    <AlertTitle>Suggestion</AlertTitle>
-                    <AlertDescription>{nudge}</AlertDescription>
-                </Alert>
-                )}
-            </div>
-          )}
-
-        </CardContent>
-      </Card>
+      {/* If on a dedicated form page, wrap in a Card */}
+      { !onOriginChange && !onDestinationChange ? (
+         <Card>
+            <CardContent className="p-6">
+                {cardContent}
+                {aiFeatures}
+            </CardContent>
+         </Card>
+      ) : (
+        // If embedded, just render the form
+        <div className="space-y-6">
+            {cardContent}
+            {aiFeatures}
+        </div>
+      )}
       
       <Dialog open={!!detectionResult} onOpenChange={() => setDetectionResult(null)}>
         <DialogContent>
@@ -513,4 +539,3 @@ function DateTimePicker({ field }: { field: any }) {
     </div>
   );
 }
-
