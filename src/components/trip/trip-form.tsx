@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, ImageIcon } from "lucide-react"
+import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -37,7 +37,7 @@ import { Textarea } from "../ui/textarea"
 import { transportationIcons } from "../icons"
 import { Destination } from "@/lib/location"
 import { Checkbox } from "../ui/checkbox"
-
+import Image from "next/image"
 
 const formSchema = z.object({
   origin: z.string().min(2, "Origin is too short").max(100, "Origin is too long"),
@@ -48,7 +48,7 @@ const formSchema = z.object({
   companions: z.coerce.number().int().min(0, "Cannot be negative").max(20, "Max 20 companions"),
   purpose: z.enum(['work', 'leisure', 'errands', 'other'], { required_error: "Purpose is required." }),
   notes: z.string().max(500, "Notes are too long").optional(),
-  destinationImageUrl: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
+  destinationImageUrl: z.string().optional(),
   isNicePlace: z.boolean().optional(),
 }).refine((data) => data.endTime > data.startTime, {
   message: "End time must be after start time.",
@@ -80,6 +80,11 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
   const [originCoords, setOriginCoords] = useState<{lat: number, lon: number} | null>(trip?.originCoords || null);
   const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(trip?.destinationCoords || null);
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  
   const form = useForm<TripFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: trip ? {
@@ -98,13 +103,57 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
     },
   });
 
+  const capturedImage = form.watch('destinationImageUrl');
+
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+      setIsCameraOpen(false);
+    }
+  }, []);
+
+  const startCamera = async () => {
+    stopCamera();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraOpen(true);
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: 'destructive',
+        title: 'Camera Error',
+        description: 'Could not access the camera. Please check permissions.',
+      });
+    }
+  };
+
+  const handleCaptureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // compress image
+      form.setValue('destinationImageUrl', dataUrl);
+      stopCamera();
+    }
+  };
+
+
   useEffect(() => {
     if (trip) {
       form.reset(trip);
       if (trip.originCoords) setOriginCoords(trip.originCoords);
       if (trip.destinationCoords) setDestinationCoords(trip.destinationCoords);
     }
-  }, [trip, form]);
+    // Cleanup camera on unmount
+    return () => stopCamera();
+  }, [trip, form, stopCamera]);
 
   const handleOriginSelect = (place: Place | null) => {
     if (place) {
@@ -354,12 +403,32 @@ export function TripForm({ trip, onOriginChange, onDestinationChange }: TripForm
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Destination Image</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                      <Input placeholder="https://example.com/image.png" {...field} />
-                    </div>
-                  </FormControl>
+                  <Card>
+                    <CardContent className="p-3">
+                      <canvas ref={canvasRef} className="hidden" />
+                      {isCameraOpen ? (
+                        <div className="space-y-2">
+                          <div className="bg-muted rounded-md overflow-hidden aspect-video flex items-center justify-center">
+                            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover"/>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={handleCaptureImage} className="w-full">Capture</Button>
+                            <Button onClick={stopCamera} variant="outline" className="w-full">Close Camera</Button>
+                          </div>
+                        </div>
+                      ) : capturedImage ? (
+                        <div className="space-y-2">
+                          <Image src={capturedImage} alt="Captured destination" width={400} height={225} className="rounded-md w-full aspect-video object-cover" />
+                          <Button onClick={() => form.setValue('destinationImageUrl', '')} variant="outline" className="w-full">Remove Image</Button>
+                        </div>
+                      ) : (
+                        <Button onClick={startCamera} variant="outline" className="w-full flex items-center gap-2">
+                          <CameraIcon />
+                          Open Camera
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
                   <FormMessage />
                 </FormItem>
               )}
