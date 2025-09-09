@@ -111,18 +111,24 @@ export function Header() {
           </Link>
 
           {installPrompt && !isAppInstalled && (
-            <Button onClick={handleInstallClick} variant="outline" size="sm" className="hidden sm:inline-flex bg-primary/10 border-primary/50 text-primary hover:text-primary">
-              <Download className="mr-2 h-4 w-4" />
-              Install App
-            </Button>
+            <>
+                <Button onClick={handleInstallClick} variant="outline" size="sm" className="hidden sm:inline-flex bg-primary/10 border-primary/50 text-primary hover:text-primary">
+                    <Download className="mr-2 h-4 w-4" />
+                    Install App
+                </Button>
+                <Button onClick={handleInstallClick} variant="ghost" size="icon" className="sm:hidden text-primary">
+                    <Download className="h-5 w-5" />
+                    <span className="sr-only">Install App</span>
+                </Button>
+            </>
           )}
 
           <Button onClick={handleExport} disabled={trips.length === 0} variant="outline" size="sm" className="hidden sm:inline-flex">
             <Download className="mr-2 h-4 w-4" />
             Export Data
           </Button>
-           <Button onClick={handleExport} disabled={trips.length === 0} variant="outline" size="icon" className="sm:hidden">
-            <Download className="h-4 w-4" />
+           <Button onClick={handleExport} disabled={trips.length === 0} variant="ghost" size="icon" className="sm:hidden">
+            <Download className="h-5 w-5" />
             <span className="sr-only">Export Data</span>
           </Button>
         </div>
