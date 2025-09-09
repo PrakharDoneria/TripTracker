@@ -1,3 +1,4 @@
+
 'use client';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import type { Trip } from '@/lib/types';
@@ -105,4 +106,3 @@ const Map = ({ trips }: MapProps) => {
 };
 
 export default Map;
-
