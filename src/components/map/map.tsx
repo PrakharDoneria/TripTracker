@@ -14,6 +14,7 @@ interface MapViewProps {
 const GEOAPIFY_API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
 
 const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w-full' }: MapViewProps) => {
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const destinationMarkersRef = useRef<L.Marker[]>([]);
@@ -21,10 +22,9 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
   
   // Initialize the map
   useEffect(() => {
-    const mapElement = document.getElementById('map');
-    if (mapElement && !mapElement.hasChildNodes()) { // Prevent re-initialization
+    if (mapContainerRef.current && !mapRef.current) { // Prevent re-initialization
         // Create the map
-        const map = L.map('map', {
+        const map = L.map(mapContainerRef.current, {
             center: userLocation 
             ? [userLocation.latitude, userLocation.longitude] 
             : [8.5241, 76.9366], // Default to Trivandrum if no location
@@ -125,19 +125,25 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
 
     // Fit map to bounds
     if(userLocation && destinations.length > 0) {
-        const points = [
-            L.latLng(userLocation.latitude, userLocation.longitude),
-            ...destinations.map(d => L.latLng(d.latitude, d.longitude))
-        ];
-        const bounds = L.latLngBounds(points);
-        if(bounds.isValid()) {
-            map.fitBounds(bounds, { padding: [50, 50] });
+        const validDestinations = destinations.filter(d => d.latitude && d.longitude);
+        if (validDestinations.length > 0) {
+            const points = [
+                L.latLng(userLocation.latitude, userLocation.longitude),
+                ...validDestinations.map(d => L.latLng(d.latitude, d.longitude))
+            ];
+            const bounds = L.latLngBounds(points);
+            if(bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
         }
     } else if (destinations.length > 0) {
-        const points = destinations.map(d => L.latLng(d.latitude, d.longitude));
-        const bounds = L.latLngBounds(points);
-         if(bounds.isValid()) {
-            map.fitBounds(bounds, { padding: [50, 50] });
+        const validDestinations = destinations.filter(d => d.latitude && d.longitude);
+        if (validDestinations.length > 0) {
+            const points = validDestinations.map(d => L.latLng(d.latitude, d.longitude));
+            const bounds = L.latLngBounds(points);
+            if(bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
         }
     } else if (userLocation) {
         map.setView([userLocation.latitude, userLocation.longitude], 13);
@@ -173,8 +179,10 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
   };
 
   return (
-    <div id="map" className={className} style={{ height: 'calc(100vh - 4rem)' }}></div>
+    <div ref={mapContainerRef} className={className} style={{ height: 'calc(100vh - 4rem)' }}></div>
   );
 };
 
 export default MapView;
+
+    
