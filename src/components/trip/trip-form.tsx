@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,14 +23,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import type { Trip, TransportationMode } from "@/lib/types"
+import type { Trip, TransportationMode, TripPurpose } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { smartTripDetection } from "@/ai/flows/smart-trip-detection"
-import { nudgeForMissingData, type NudgeForMissingDataInput } from "@/ai/flows/nudge-for-missing-data"
+import { nudgeForMissingData } from "@/ai/flows/nudge-for-missing-data"
+import type { NudgeForMissingDataInput } from "@/ai/schemas"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useTripStore } from "@/hooks/use-trip-store"
 import PlaceSearch from "./place-search"
+import { Textarea } from "../ui/textarea"
 
 const formSchema = z.object({
   origin: z.string().min(2, "Origin is too short").max(100, "Origin is too long"),
@@ -38,6 +41,8 @@ const formSchema = z.object({
   endTime: z.date({ required_error: "End time is required." }),
   mode: z.enum(['walk', 'bike', 'car', 'bus', 'train'], { required_error: "Mode is required." }),
   companions: z.coerce.number().int().min(0, "Cannot be negative").max(20, "Max 20 companions"),
+  purpose: z.enum(['work', 'leisure', 'errands', 'other'], { required_error: "Purpose is required." }),
+  notes: z.string().max(500, "Notes are too long").optional(),
 }).refine((data) => data.endTime > data.startTime, {
   message: "End time must be after start time.",
   path: ["endTime"],
@@ -46,29 +51,46 @@ const formSchema = z.object({
 type TripFormValues = z.infer<typeof formSchema>;
 
 const transportationModes: TransportationMode[] = ['walk', 'bike', 'car', 'bus', 'train'];
+const tripPurposes: TripPurpose[] = ['work', 'leisure', 'errands', 'other'];
 
-export function TripForm() {
+interface TripFormProps {
+    trip?: Trip;
+}
+
+export function TripForm({ trip }: TripFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const { addTrip } = useTripStore();
+  const { trips, addTrip, updateTrip } = useTripStore();
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionResult, setDetectionResult] = useState<any>(null);
   const [isNudging, setIsNudging] = useState(false);
   const [nudge, setNudge] = useState<string | null>(null);
 
-  const [originCoords, setOriginCoords] = useState<{lat: number, lon: number} | null>(null);
-  const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(null);
+  const [originCoords, setOriginCoords] = useState<{lat: number, lon: number} | null>(trip?.originCoords || null);
+  const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(trip?.destinationCoords || null);
 
   const form = useForm<TripFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: trip ? {
+        ...trip,
+    } : {
       origin: "",
       destination: "",
       companions: 0,
       startTime: new Date(),
       endTime: new Date(new Date().getTime() + 60 * 60 * 1000), // 1 hour later
+      purpose: 'other',
+      notes: '',
     },
   });
+
+  useEffect(() => {
+    if (trip) {
+      form.reset(trip);
+      if (trip.originCoords) setOriginCoords(trip.originCoords);
+      if (trip.destinationCoords) setDestinationCoords(trip.destinationCoords);
+    }
+  }, [trip, form]);
 
   function onSubmit(data: TripFormValues) {
     if (!originCoords || !destinationCoords) {
@@ -80,16 +102,27 @@ export function TripForm() {
       return;
     }
     
-    addTrip({
-        ...data,
-        originCoords,
-        destinationCoords,
-    });
-
-    toast({
-      title: "Trip Saved!",
-      description: "Your new trip has been added to your trip chain.",
-    });
+    if (trip) {
+        updateTrip(trip.id, {
+            ...data,
+            originCoords,
+            destinationCoords,
+        });
+        toast({
+            title: "Trip Updated!",
+            description: "Your trip has been successfully updated.",
+        });
+    } else {
+        addTrip({
+            ...data,
+            originCoords,
+            destinationCoords,
+        });
+        toast({
+          title: "Trip Saved!",
+          description: "Your new trip has been added to your trip chain.",
+        });
+    }
     router.push('/');
   }
 
@@ -133,11 +166,18 @@ export function TripForm() {
     setIsNudging(true);
     setNudge(null);
     try {
-      const input: NudgeForMissingDataInput = {
-        currentLocation: 'Home',
-        possibleDestinations: ['Office', 'Gym', 'Mall'],
-        missingInformation: 'destination',
-      };
+        const recentTrips = trips.slice(0, 5);
+        const input: NudgeForMissingDataInput = {
+            currentLocation: 'Home',
+            possibleDestinations: [...new Set(recentTrips.map(t => t.destination).slice(0,3))],
+            missingInformation: 'destination',
+            recentTripsForContext: recentTrips.map(t => ({
+                origin: t.origin,
+                destination: t.destination,
+                purpose: t.purpose || 'not specified',
+                time: t.startTime.toISOString(),
+            }))
+        };
       const result = await nudgeForMissingData(input);
       setNudge(result.nudgeMessage);
     } catch (error) {
@@ -169,6 +209,8 @@ export function TripForm() {
                       <FormControl>
                         <PlaceSearch
                           instanceId="origin-search"
+                          placeholder="e.g., Home"
+                          defaultValue={trip?.origin ? { label: trip.origin, value: trip.origin, lat: trip.originCoords?.lat || 0, lon: trip.originCoords?.lon || 0 } : undefined}
                           onPlaceSelect={(place) => {
                             if (place) {
                               field.onChange(place.label);
@@ -178,7 +220,6 @@ export function TripForm() {
                               setOriginCoords(null);
                             }
                           }}
-                          placeholder="e.g., Home"
                         />
                       </FormControl>
                       <FormMessage />
@@ -194,6 +235,8 @@ export function TripForm() {
                       <FormControl>
                         <PlaceSearch
                            instanceId="destination-search"
+                           placeholder="e.g., Office"
+                           defaultValue={trip?.destination ? { label: trip.destination, value: trip.destination, lat: trip.destinationCoords?.lat || 0, lon: trip.destinationCoords?.lon || 0 } : undefined}
                            onPlaceSelect={(place) => {
                             if (place) {
                               field.onChange(place.label);
@@ -203,7 +246,6 @@ export function TripForm() {
                               setDestinationCoords(null);
                             }
                           }}
-                          placeholder="e.g., Office"
                         />
                       </FormControl>
                       <FormMessage />
@@ -218,7 +260,7 @@ export function TripForm() {
                 )} />
                 <FormField control={form.control} name="mode" render={({ field }) => (
                   <FormItem><FormLabel>Mode of Transport</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}><FormControl>
                       <SelectTrigger><SelectValue placeholder="Select a mode" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {transportationModes.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
@@ -226,33 +268,65 @@ export function TripForm() {
                     </Select><FormMessage />
                   </FormItem>
                 )} />
+                 <FormField control={form.control} name="purpose" render={({ field }) => (
+                  <FormItem><FormLabel>Purpose</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}><FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        {tripPurposes.map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}
+                      </SelectContent>
+                    </Select><FormMessage />
+                  </FormItem>
+                )} />
                 <FormField control={form.control} name="companions" render={({ field }) => (
                   <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
+                <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Notes</FormLabel>
+                        <FormControl>
+                            <Textarea
+                            placeholder="Add any notes about your trip..."
+                            className="resize-none"
+                            {...field}
+                            />
+                        </FormControl>
+                        <FormDescription>
+                            You can add details like ticket numbers, reminders, or observations.
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
               </div>
-              <Button type="submit" className="w-full transition-transform active:scale-[0.98]">Save Trip</Button>
+              <Button type="submit" className="w-full transition-transform active:scale-[0.98]">{trip ? 'Update Trip' : 'Save Trip'}</Button>
             </form>
           </Form>
           
-          <div className="mt-6 space-y-4">
-            <Button variant="outline" className="w-full" onClick={handleAutoDetect} disabled={isDetecting}>
-              {isDetecting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-              Assisted Data Capture
-            </Button>
-            
-            <Button variant="ghost" className="w-full text-primary hover:text-primary hover:bg-accent/50" onClick={handleNudge} disabled={isNudging}>
-              {isNudging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4" />}
-              Get a Travel Nudge
-            </Button>
+          {!trip && (
+            <div className="mt-6 space-y-4">
+                <Button variant="outline" className="w-full" onClick={handleAutoDetect} disabled={isDetecting}>
+                {isDetecting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                Assisted Data Capture
+                </Button>
+                
+                <Button variant="ghost" className="w-full text-primary hover:text-primary hover:bg-accent/50" onClick={handleNudge} disabled={isNudging}>
+                {isNudging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4" />}
+                Get a Travel Nudge
+                </Button>
 
-            {nudge && (
-              <Alert>
-                <Lightbulb className="h-4 w-4" />
-                <AlertTitle>Suggestion</AlertTitle>
-                <AlertDescription>{nudge}</AlertDescription>
-              </Alert>
-            )}
-          </div>
+                {nudge && (
+                <Alert>
+                    <Lightbulb className="h-4 w-4" />
+                    <AlertTitle>Suggestion</AlertTitle>
+                    <AlertDescription>{nudge}</AlertDescription>
+                </Alert>
+                )}
+            </div>
+          )}
 
         </CardContent>
       </Card>
@@ -287,8 +361,17 @@ export function TripForm() {
 
 
 function DateTimePicker({ field }: { field: any }) {
-  const [date, setDate] = useState<Date | undefined>(field.value);
-  const [time, setTime] = useState(field.value ? format(field.value, "HH:mm") : "00:00");
+  const [date, setDate] = useState<Date | undefined>(field.value ? new Date(field.value) : undefined);
+  const [time, setTime] = useState(field.value ? format(new Date(field.value), "HH:mm") : "00:00");
+
+  useEffect(() => {
+    if(field.value) {
+      const d = new Date(field.value);
+      setDate(d);
+      setTime(format(d, "HH:mm"));
+    }
+  }, [field.value])
+
 
   const handleDateChange = (newDate: Date | undefined) => {
     if (!newDate) return;

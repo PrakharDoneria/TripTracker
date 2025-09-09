@@ -4,42 +4,10 @@
  * @fileOverview Smart trip detection flow using sensor data and location to infer mode of transportation.
  *
  * - smartTripDetection - A function that intelligently detects the mode of transportation.
- * - SmartTripDetectionInput - The input type for the smartTripDetection function.
- * - SmartTripDetectionOutput - The return type for the smartTripDetection function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const SmartTripDetectionInputSchema = z.object({
-  sensorData: z
-    .string()
-    .describe('Sensor data from the device, including accelerometer and gyroscope data.'),
-  locationData: z
-    .string()
-    .describe('Location data from the device, including latitude, longitude, and accuracy.'),
-  time: z.string().describe('The current time.'),
-});
-export type SmartTripDetectionInput = z.infer<typeof SmartTripDetectionInputSchema>;
-
-const SmartTripDetectionOutputSchema = z.object({
-  modeOfTransportation: z
-    .string()
-    .describe(
-      'The detected mode of transportation (e.g., walking, cycling, driving, public transport).' 
-    ),
-  confidence: z
-    .number()
-    .describe('The confidence level of the detected mode of transportation (0-1).'),
-  needUserConfirmation: z
-    .boolean()
-    .describe('Whether user confirmation is needed due to low confidence.'),
-  suggestedNudge: z
-    .string()
-    .optional()
-    .describe('A location-based travel nudge when the trip can\'t be determined confidently.'),
-});
-export type SmartTripDetectionOutput = z.infer<typeof SmartTripDetectionOutputSchema>;
+import { SmartTripDetectionInputSchema, type SmartTripDetectionInput, SmartTripDetectionOutputSchema, type SmartTripDetectionOutput } from '@/ai/schemas';
 
 export async function smartTripDetection(input: SmartTripDetectionInput): Promise<SmartTripDetectionOutput> {
   return smartTripDetectionFlow(input);

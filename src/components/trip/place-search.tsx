@@ -2,25 +2,27 @@
 'use client'
 
 import { useState } from 'react';
-import { AsyncPaginate } from 'react-select-async-paginate';
+import { AsyncPaginate, type AsyncPaginateProps } from 'react-select-async-paginate';
+import type { GroupBase } from 'react-select';
 
 const GEOAPIFY_API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
 const GEOAPIFY_URL = "https://api.geoapify.com/v1/geocode/autocomplete";
 
-interface Place {
+export interface Place {
   label: string;
   value: string;
   lat: number;
   lon: number;
 }
-interface PlaceSearchProps {
+interface PlaceSearchProps extends Omit<AsyncPaginateProps<Place, GroupBase<Place>, any, true>, 'loadOptions'> {
   onPlaceSelect: (place: Place | null) => void;
   placeholder?: string;
   instanceId?: string;
+  defaultValue?: Place;
 }
 
-export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId }: PlaceSearchProps) {
-  const [value, setValue] = useState<Place | null>(null);
+export default function PlaceSearch({ onPlaceSelect, placeholder, instanceId, defaultValue }: PlaceSearchProps) {
+  const [value, setValue] = useState<Place | null>(defaultValue || null);
 
   const loadOptions = async (search: string, loadedOptions: any) => {
     try {

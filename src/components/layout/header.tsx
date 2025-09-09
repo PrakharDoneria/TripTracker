@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, Map, Home } from 'lucide-react';
+import { Download, Map, Home, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTripStore } from '@/hooks/use-trip-store';
 import Link from 'next/link';
@@ -53,6 +53,12 @@ export function Header() {
             <Button variant="ghost" size="icon">
               <Home />
               <span className="sr-only">Home</span>
+            </Button>
+          </Link>
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon">
+              <LayoutDashboard />
+              <span className="sr-only">Dashboard</span>
             </Button>
           </Link>
           <Link href="/map">

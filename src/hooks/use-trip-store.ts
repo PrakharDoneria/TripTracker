@@ -12,6 +12,8 @@ const initialTrips: Trip[] = [
     endTime: new Date(new Date(new Date().setDate(new Date().getDate() - 1)).setHours(new Date().getHours() + 1)),
     mode: 'car',
     companions: 1,
+    purpose: 'work',
+    notes: 'Meeting with the client',
     originCoords: { lat: 8.535, lon: 76.906 },
     destinationCoords: { lat: 8.556, lon: 76.882 },
   },
@@ -22,6 +24,7 @@ const initialTrips: Trip[] = [
     startTime: new Date(new Date().setDate(new Date().getDate() - 2)),
     endTime: new Date(new Date(new Date().setDate(new Date().getDate() - 2)).setHours(new Date().getHours() + 1)),
     mode: 'bus',
+    purpose: 'work',
     companions: 0,
     originCoords: { lat: 8.5241, lon: 76.9366 },
     destinationCoords: { lat: 8.556, lon: 76.882 },
@@ -31,16 +34,30 @@ const initialTrips: Trip[] = [
 interface TripState {
   trips: Trip[];
   addTrip: (trip: Omit<Trip, 'id'>) => void;
+  updateTrip: (id: string, updatedTrip: Omit<Trip, 'id'>) => void;
+  deleteTrip: (id: string) => void;
+  getTripById: (id: string) => Trip | undefined;
 }
 
 export const useTripStore = create<TripState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       trips: initialTrips,
       addTrip: (trip) =>
         set((state) => ({
           trips: [{ ...trip, id: crypto.randomUUID() }, ...state.trips],
         })),
+      updateTrip: (id, updatedTrip) =>
+        set((state) => ({
+            trips: state.trips.map((trip) =>
+                trip.id === id ? { ...trip, ...updatedTrip, id } : trip
+            ),
+        })),
+      deleteTrip: (id) =>
+        set((state) => ({
+            trips: state.trips.filter((trip) => trip.id !== id),
+        })),
+      getTripById: (id) => get().trips.find((trip) => trip.id === id),
     }),
     {
       name: 'trip-storage', 

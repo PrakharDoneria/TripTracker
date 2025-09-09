@@ -1,4 +1,5 @@
 export type TransportationMode = 'walk' | 'bike' | 'car' | 'bus' | 'train';
+export type TripPurpose = 'work' | 'leisure' | 'errands' | 'other';
 
 export interface Trip {
   id: string;
@@ -8,6 +9,8 @@ export interface Trip {
   endTime: Date;
   mode: TransportationMode;
   companions: number;
+  purpose: TripPurpose;
+  notes?: string;
   originCoords?: { lat: number, lon: number };
   destinationCoords?: { lat: number, lon: number };
 }
