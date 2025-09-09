@@ -40,9 +40,7 @@ export const NudgeForMissingDataInputSchema = z.object({
     .describe('A list of possible destinations based on recent activity.'),
   missingInformation: z
     .string()
-    .describe(
-      'A description of the trip details that are missing (e.g., destination, mode of transport).'
-    ),
+    .describe('A description of the trip details that are missing (e.g., destination, mode of transport).'),
   recentTripsForContext: z.array(RecentTripSchema).optional().describe('A list of recent trips to provide context for the nudge.'),
 });
 export type NudgeForMissingDataInput = z.infer<
@@ -52,9 +50,7 @@ export type NudgeForMissingDataInput = z.infer<
 export const NudgeForMissingDataOutputSchema = z.object({
   nudgeMessage: z
     .string()
-    .describe(
-      'A gentle, location-based question to help the user complete the missing trip information.'
-    ),
+    .describe('A gentle, location-based question to help the user complete the missing trip information.'),
 });
 export type NudgeForMissingDataOutput = z.infer<
   typeof NudgeForMissingDataOutputSchema
@@ -75,9 +71,7 @@ export type SmartTripDetectionInput = z.infer<typeof SmartTripDetectionInputSche
 export const SmartTripDetectionOutputSchema = z.object({
   modeOfTransportation: z
     .string()
-    .describe(
-      'The detected mode of transportation (e.g., walking, cycling, driving, public transport).'
-    ),
+    .describe('The detected mode of transportation (e.g., walking, cycling, driving, public transport).'),
   confidence: z
     .number()
     .describe('The confidence level of the detected mode of transportation (0-1).'),
@@ -90,3 +84,20 @@ export const SmartTripDetectionOutputSchema = z.object({
     .describe('A location-based travel nudge when the trip can\'t be determined confidently.'),
 });
 export type SmartTripDetectionOutput = z.infer<typeof SmartTripDetectionOutputSchema>;
+
+// Schemas for ai-trip-recommendation.ts
+export const AITripRecommendationInputSchema = z.object({
+    origin: z.string().describe("The starting point of the trip."),
+    destination: z.string().describe("The destination of the trip."),
+    purpose: z.enum(['work', 'leisure', 'errands', 'other']).describe("The purpose of the trip."),
+    preferredMode: z.enum(['walk', 'bike', 'car', 'bus', 'train']).describe("The user's preferred mode of transport."),
+    trafficConditions: z.string().describe("Current traffic conditions (e.g., light, moderate, heavy)."),
+    weatherConditions: z.string().describe("Current weather conditions (e.g., sunny, raining)."),
+});
+export type AITripRecommendationInput = z.infer<typeof AITripRecommendationInputSchema>;
+
+export const AITripRecommendationOutputSchema = z.object({
+    recommendedMode: z.enum(['walk', 'bike', 'car', 'bus', 'train']).describe("The recommended mode of transportation."),
+    reason: z.string().describe("The reason for the recommendation."),
+});
+export type AITripRecommendationOutput = z.infer<typeof AITripRecommendationOutputSchema>;

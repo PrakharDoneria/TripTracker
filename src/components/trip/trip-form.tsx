@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb } from "lucide-react"
+import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,12 +27,15 @@ import type { Trip, TransportationMode, TripPurpose } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { smartTripDetection } from "@/ai/flows/smart-trip-detection"
 import { nudgeForMissingData } from "@/ai/flows/nudge-for-missing-data"
-import type { NudgeForMissingDataInput } from "@/ai/schemas"
+import { getAITripRecommendation } from "@/ai/flows/ai-trip-recommendation"
+import type { NudgeForMissingDataInput, AITripRecommendationOutput } from "@/ai/schemas"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useTripStore } from "@/hooks/use-trip-store"
 import PlaceSearch from "./place-search"
 import { Textarea } from "../ui/textarea"
+import { transportationIcons } from "../icons"
+
 
 const formSchema = z.object({
   origin: z.string().min(2, "Origin is too short").max(100, "Origin is too long"),
@@ -65,6 +68,9 @@ export function TripForm({ trip }: TripFormProps) {
   const [detectionResult, setDetectionResult] = useState<any>(null);
   const [isNudging, setIsNudging] = useState(false);
   const [nudge, setNudge] = useState<string | null>(null);
+  const [isRecommending, setIsRecommending] = useState(false);
+  const [recommendation, setRecommendation] = useState<AITripRecommendationOutput | null>(null);
+
 
   const [originCoords, setOriginCoords] = useState<{lat: number, lon: number} | null>(trip?.originCoords || null);
   const [destinationCoords, setDestinationCoords] = useState<{lat: number, lon: number} | null>(trip?.destinationCoords || null);
@@ -79,6 +85,7 @@ export function TripForm({ trip }: TripFormProps) {
       companions: 0,
       startTime: new Date(),
       endTime: new Date(new Date().getTime() + 60 * 60 * 1000), // 1 hour later
+      mode: 'car',
       purpose: 'other',
       notes: '',
     },
@@ -192,6 +199,51 @@ export function TripForm({ trip }: TripFormProps) {
     }
   };
 
+  const handleRecommendation = async () => {
+    const values = form.getValues();
+    if (!values.origin || !values.destination) {
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please enter an origin and destination first.",
+        });
+        return;
+    }
+    setIsRecommending(true);
+    setRecommendation(null);
+    try {
+        const result = await getAITripRecommendation({
+            origin: values.origin,
+            destination: values.destination,
+            purpose: values.purpose,
+            preferredMode: values.mode,
+            // These would be dynamic in a real app
+            trafficConditions: "moderate",
+            weatherConditions: "clear and sunny",
+        });
+        setRecommendation(result);
+    } catch (error) {
+        console.error(error);
+        toast({
+            variant: "destructive",
+            title: "Recommendation Failed",
+            description: "Could not get an AI recommendation at this time.",
+        });
+    } finally {
+        setIsRecommending(false);
+    }
+  };
+
+  const confirmRecommendation = () => {
+    if (recommendation) {
+        form.setValue('mode', recommendation.recommendedMode);
+        toast({
+            title: "Mode Updated",
+            description: `Switched to ${recommendation.recommendedMode} based on AI recommendation.`,
+        });
+    }
+    setRecommendation(null);
+  };
 
   return (
     <>
@@ -312,6 +364,11 @@ export function TripForm({ trip }: TripFormProps) {
                 {isDetecting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
                 Assisted Data Capture
                 </Button>
+
+                <Button variant="secondary" className="w-full" onClick={handleRecommendation} disabled={isRecommending}>
+                    {isRecommending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
+                    Get AI Recommendation
+                </Button>
                 
                 <Button variant="ghost" className="w-full text-primary hover:text-primary hover:bg-accent/50" onClick={handleNudge} disabled={isNudging}>
                 {isNudging ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4" />}
@@ -353,6 +410,39 @@ export function TripForm({ trip }: TripFormProps) {
             <Button variant="outline" onClick={() => setDetectionResult(null)}>Cancel</Button>
             <Button onClick={confirmDetection}>Confirm & Pre-fill</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!recommendation} onOpenChange={() => setRecommendation(null)}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle className="font-headline flex items-center gap-2">
+                    <Bot /> AI Recommendation
+                </DialogTitle>
+                <DialogDescription>
+                    Based on the trip details and current conditions, here's our suggestion.
+                </DialogDescription>
+            </DialogHeader>
+            {recommendation && (
+                <div className="space-y-4 py-4">
+                    <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Recommended Mode</p>
+                        <div className="flex items-center justify-center gap-3 mt-2">
+                           {React.createElement(transportationIcons[recommendation.recommendedMode], { className: "h-8 w-8 text-primary" })}
+                           <p className="text-2xl font-bold capitalize">{recommendation.recommendedMode}</p>
+                        </div>
+                    </div>
+                    <Alert>
+                        <Lightbulb className="h-4 w-4" />
+                        <AlertTitle>Reasoning</AlertTitle>
+                        <AlertDescription>{recommendation.reason}</AlertDescription>
+                    </Alert>
+                </div>
+            )}
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setRecommendation(null)}>Ignore</Button>
+                <Button onClick={confirmRecommendation}>Use this Mode</Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -423,3 +513,4 @@ function DateTimePicker({ field }: { field: any }) {
     </div>
   );
 }
+
