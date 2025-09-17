@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -150,8 +151,8 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
           </div>
         )}
         <div className="flex-1">
-          <CardHeader className="pb-3 pr-20">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <CardHeader className="pb-3 relative">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pr-20">
                 <CardTitle className="flex items-center gap-2 text-lg flex-wrap">
                     <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                     <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
@@ -162,6 +163,34 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
                     <Icon className="h-4 w-4" />
                     <span className="font-normal capitalize">{trip.mode}</span>
                 </Badge>
+            </div>
+             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+              <Link href={`/app/trips/${trip.id}/edit`}>
+                  <Button variant="ghost" size="icon">
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only">Edit Trip</span>
+                  </Button>
+              </Link>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={user?.uid !== trip.creatorId}>
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete Trip</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete this trip.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardHeader>
           <CardContent className="grid gap-2 text-sm text-muted-foreground">
@@ -235,34 +264,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
           </CardContent>
         </div>
 
-        <div className="absolute top-4 right-4 flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-          <Link href={`/app/trips/${trip.id}/edit`}>
-              <Button variant="ghost" size="icon">
-                  <Edit className="h-4 w-4" />
-                  <span className="sr-only">Edit Trip</span>
-              </Button>
-          </Link>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={user?.uid !== trip.creatorId}>
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Delete Trip</span>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete this trip.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+       
       </div>
       {(isMostRecent || trip.isNicePlace) && (
         <div className="border-t p-4 pt-4 sm:p-6 sm:pt-4 space-y-4">
@@ -288,3 +290,4 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
     </Card>
   );
 }
+
