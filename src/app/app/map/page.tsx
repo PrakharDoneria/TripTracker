@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
 import { useBusinessStore } from "@/hooks/use-business-store";
+import { usePlaceStore } from "@/hooks/use-place-store";
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <p>A map is loading...</p>,
@@ -46,6 +47,7 @@ function MapPageContent() {
   const { user } = useAuth();
   const { trips, fetchTrips, getTripById } = useTripStore();
   const { businesses, fetchBusinesses } = useBusinessStore();
+  const { places, fetchPlaces } = usePlaceStore();
   const [liveUserLocation, setLiveUserLocation] = useState<GeoLocation | null>(null);
   const notifiedPlaces = useMemo(() => new Set<string>(), []);
   const searchParams = useSearchParams();
@@ -64,8 +66,9 @@ function MapPageContent() {
     if (user) {
         if(trips.length === 0) fetchTrips(user.uid);
         if(businesses.length === 0) fetchBusinesses();
+        if(places.length === 0) fetchPlaces(user.uid);
     }
-  }, [user, trips.length, fetchTrips, businesses.length, fetchBusinesses]);
+  }, [user, trips.length, fetchTrips, businesses.length, fetchBusinesses, places.length, fetchPlaces]);
 
   useEffect(() => {
     if (tripId) {
@@ -157,10 +160,18 @@ function MapPageContent() {
         website: biz.website,
         isBusiness: true,
     }));
+    
+    const customPlaces = places.map(place => ({
+      latitude: place.coords.lat,
+      longitude: place.coords.lon,
+      name: place.name,
+      description: place.description,
+      isCustomPlace: true,
+    }));
 
-    return [...tripDestinations, ...businessDestinations];
+    return [...tripDestinations, ...businessDestinations, ...customPlaces];
 
-  }, [trips, businesses, focusedTrip]);
+  }, [trips, businesses, places, focusedTrip]);
 
   const mapUserLocation = useMemo(() => {
     if(focusedTrip && focusedTrip.originCoords) {

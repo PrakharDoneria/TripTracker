@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { GeoLocation, Destination } from '@/lib/location';
 import 'leaflet/dist/leaflet.css';
 import { Button } from '../ui/button';
-import { Navigation, Briefcase } from 'lucide-react';
+import { Navigation } from 'lucide-react';
 
 interface MapViewProps {
   userLocation: GeoLocation | null;
@@ -24,6 +24,15 @@ const businessIcon = L.divIcon({
   className: 'custom-business-icon',
   iconSize: [24, 24],
   iconAnchor: [12, 12],
+});
+
+// Custom Place Icon
+const customPlaceIcon = L.divIcon({
+    html: `<div style="background-color: #db2777; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5);"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>`,
+    className: 'custom-place-icon',
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24],
 });
 
 
@@ -125,16 +134,21 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
                     shadowSize: [41, 41]
                 });
 
-                const iconToUse = destination.isBusiness ? businessIcon : defaultIcon;
-                
+                let iconToUse = defaultIcon;
                 let popupContent = `<b>${destination.name}</b>`;
-                if(destination.isBusiness) {
+
+                if (destination.isBusiness) {
+                    iconToUse = businessIcon;
                     popupContent += `<br/>${destination.contactNumber}`;
-                    if(destination.website) {
+                    if (destination.website) {
                         popupContent += `<br/><a href="${destination.website}" target="_blank" rel="noopener noreferrer">Website</a>`;
                     }
+                } else if (destination.isCustomPlace) {
+                    iconToUse = customPlaceIcon;
+                    if(destination.description) {
+                         popupContent += `<br/><i>${destination.description}</i>`
+                    }
                 }
-
 
                 const marker = L.marker(destLatLng, { icon: iconToUse })
                     .addTo(map)
@@ -191,7 +205,7 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
             const latLngs = routeGeometry.map((coord: [number, number]) => [coord[1], coord[0]] as L.LatLngExpression);
             
             if (mapRef.current) {
-              const routeLayer = L.polyline(latLngs, { color: "#1e40af", weight: 5, opacity: 0.7 }).addTo(map);
+              const routeLayer = L.polyline(latLngs, { color: "#1e40af", weight: 5, opacity: 0.7 }).addTo(mapRef.current);
               routeLayersRef.current.push(routeLayer);
             }
         }

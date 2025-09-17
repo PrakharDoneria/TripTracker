@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTripStore } from "@/hooks/use-trip-store";
-import { Download, Briefcase, LogOut, Phone } from "lucide-react";
+import { Download, Briefcase, LogOut, Phone, Pin } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -98,6 +98,20 @@ export default function MorePage() {
                                 <Button onClick={handleSaveContact} disabled={!emergencyContact}>Save Contact</Button>
                             </CardContent>
                         </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><Pin /> My Places</CardTitle>
+                                <CardDescription>Manage your custom saved places on the map.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Link href="/app/places/new" passHref>
+                                    <Button className="w-full">Add a New Place</Button>
+                                </Link>
+                                {/* Future: List and manage places here */}
+                            </CardContent>
+                        </Card>
+
                         <Card>
                              <CardContent className="p-4 flex flex-col gap-2">
                                 <Link href="/app/business/new" className="w-full">

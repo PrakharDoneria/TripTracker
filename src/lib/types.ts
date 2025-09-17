@@ -41,3 +41,11 @@ export interface Business {
     address: string;
     creatorId: string;
 }
+
+export interface Place {
+    id: string;
+    creatorId: string;
+    name: string;
+    description: string;
+    coords: { lat: number, lon: number };
+}

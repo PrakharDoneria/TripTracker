@@ -9,4 +9,6 @@ export interface Destination extends GeoLocation {
     isBusiness?: boolean;
     contactNumber?: string;
     website?: string;
+    isCustomPlace?: boolean;
+    description?: string;
 }

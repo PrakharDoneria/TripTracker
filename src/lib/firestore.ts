@@ -15,7 +15,7 @@ import {
   documentId,
   setDoc,
 } from 'firebase/firestore';
-import type { Trip, UserProfile, Business } from './types';
+import type { Trip, UserProfile, Business, Place } from './types';
 
 const db = getFirestore(app);
 
@@ -113,3 +113,21 @@ export const addBusinessToFirestore = async (business: Omit<Business, 'id'>) => 
     const docRef = await addDoc(businessesCollectionRef, business);
     return docRef.id;
 };
+
+// --- Place Functions ---
+const placesCollectionRef = collection(db, 'places');
+
+export const getPlacesFromFirestore = async (userId: string) => {
+    const q = query(placesCollectionRef, where('creatorId', '==', userId));
+    const placeSnapshot = await getDocs(q);
+    const placeList = placeSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { ...data, id: doc.id } as Place;
+    });
+    return placeList;
+}
+
+export const addPlaceToFirestore = async (place: Omit<Place, 'id'>) => {
+    const docRef = await addDoc(placesCollectionRef, place);
+    return docRef.id;
+}
