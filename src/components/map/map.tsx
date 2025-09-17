@@ -170,8 +170,10 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
             const routeGeometry = result.features[0].geometry.coordinates[0];
             const latLngs = routeGeometry.map((coord: [number, number]) => [coord[1], coord[0]] as L.LatLngExpression);
             
-            const routeLayer = L.polyline(latLngs, { color: "#1e40af", weight: 5, opacity: 0.7 }).addTo(map);
-            routeLayersRef.current.push(routeLayer);
+            if (mapRef.current) {
+              const routeLayer = L.polyline(latLngs, { color: "#1e40af", weight: 5, opacity: 0.7 }).addTo(map);
+              routeLayersRef.current.push(routeLayer);
+            }
         }
     } catch(e) {
         console.error("Error fetching route: ", e);
@@ -191,7 +193,7 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
     <div className="relative h-full w-full">
         <div ref={mapContainerRef} className={className} style={{ height: 'calc(100vh - 4rem)' }}></div>
         {showRoute && (
-            <div className="absolute bottom-5 right-5 z-[1000]">
+            <div className="absolute bottom-20 right-5 z-[1000] md:bottom-5">
                 <Button onClick={handleStartNavigation} size="lg">
                     <Navigation className="mr-2 h-5 w-5" />
                     Start Navigation
