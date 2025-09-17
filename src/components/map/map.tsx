@@ -1,9 +1,12 @@
 
+
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { GeoLocation, Destination } from '@/lib/location';
 import 'leaflet/dist/leaflet.css';
+import { Button } from '../ui/button';
+import { Navigation } from 'lucide-react';
 
 interface MapViewProps {
   userLocation: GeoLocation | null;
@@ -174,8 +177,27 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
     }
   };
 
+  const handleStartNavigation = () => {
+    if (userLocation && destinations.length > 0) {
+      const origin = userLocation;
+      const destination = destinations[destinations.length - 1]; // Assume final destination
+      const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}`;
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
+
   return (
-    <div ref={mapContainerRef} className={className} style={{ height: 'calc(100vh - 4rem)' }}></div>
+    <div className="relative h-full w-full">
+        <div ref={mapContainerRef} className={className} style={{ height: 'calc(100vh - 4rem)' }}></div>
+        {showRoute && (
+            <div className="absolute bottom-5 right-5 z-[1000]">
+                <Button onClick={handleStartNavigation} size="lg">
+                    <Navigation className="mr-2 h-5 w-5" />
+                    Start Navigation
+                </Button>
+            </div>
+        )}
+    </div>
   );
 };
 

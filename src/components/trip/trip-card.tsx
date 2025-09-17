@@ -151,20 +151,8 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
           </div>
         )}
         <div className="flex-1">
-          <CardHeader className="pb-3 relative pr-24">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <CardTitle className="flex items-center gap-2 text-lg flex-wrap">
-                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
-                    <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.destination}>{trip.destination}</span>
-                </CardTitle>
-                <Badge variant="secondary" className="flex items-center gap-2 self-start sm:self-center">
-                    <Icon className="h-4 w-4" />
-                    <span className="font-normal capitalize">{trip.mode}</span>
-                </Badge>
-            </div>
-             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+          <CardHeader className="pb-3 relative">
+             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Link href={`/app/trips/${trip.id}/edit`}>
                   <Button variant="ghost" size="icon">
                       <Edit className="h-4 w-4" />
@@ -191,6 +179,18 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+                <CardTitle className="flex items-center gap-2 text-lg flex-wrap pr-16">
+                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
+                    <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.destination}>{trip.destination}</span>
+                </CardTitle>
+                <Badge variant="secondary" className="flex items-center gap-2 shrink-0">
+                    <Icon className="h-4 w-4" />
+                    <span className="font-normal capitalize">{trip.mode}</span>
+                </Badge>
             </div>
           </CardHeader>
           <CardContent className="grid gap-2 text-sm text-muted-foreground">
