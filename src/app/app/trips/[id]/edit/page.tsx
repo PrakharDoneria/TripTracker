@@ -7,35 +7,49 @@ import { Header } from "@/components/layout/header";
 import { TripForm } from "@/components/trip/trip-form";
 import { useTripStore } from "@/hooks/use-trip-store";
 import type { Trip } from "@/lib/types";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function EditTripPage() {
     const router = useRouter();
     const params = useParams();
-    const { getTripById } = useTripStore();
+    const { getTripById, fetchTrips, trips } = useTripStore();
+    const { user } = useAuth();
     const [trip, setTrip] = useState<Trip | undefined>(undefined);
     const [loading, setLoading] = useState(true);
 
     const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
     useEffect(() => {
-        if (id) {
+        const loadTrip = async () => {
+            if (user && trips.length === 0) {
+                await fetchTrips(user.uid);
+            }
+        }
+        loadTrip();
+    }, [user, fetchTrips, trips.length]);
+
+    useEffect(() => {
+        if (id && trips.length > 0) {
             const foundTrip = getTripById(id);
             if (foundTrip) {
                 setTrip(foundTrip);
             } else {
-                // Handle case where trip is not found, maybe redirect
+                // Handle case where trip is not found
+                console.warn(`Trip with id ${id} not found, redirecting.`);
                 router.push('/app');
             }
+             setLoading(false);
+        } else if (trips.length > 0) {
+             setLoading(false);
         }
-        setLoading(false);
-    }, [id, getTripById, router]);
+    }, [id, getTripById, router, trips]);
 
     if (loading) {
         return (
              <div className="flex min-h-screen w-full flex-col bg-background">
                 <Header />
                 <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
-                    <p>Loading...</p>
+                    <p>Loading trip details...</p>
                 </main>
             </div>
         )
@@ -46,7 +60,7 @@ export default function EditTripPage() {
             <div className="flex min-h-screen w-full flex-col bg-background">
                 <Header />
                 <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
-                    <p>Trip not found.</p>
+                    <p>Trip not found. You may not have access or it may have been deleted.</p>
                 </main>
             </div>
         )

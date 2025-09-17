@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Download, Map, Home, LayoutDashboard, Camera, User, LogOut } from 'lucide-react';
+import { Download, Map, Home, LayoutDashboard, Camera, User, LogOut, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTripStore } from '@/hooks/use-trip-store';
 import Link from 'next/link';
@@ -108,6 +108,12 @@ export function Header() {
               <span className="sr-only">Camera View</span>
             </Button>
           </Link>
+           <Link href="/app/business/new">
+            <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
+              <Briefcase className="h-5 w-5" />
+              <span className="sr-only">List Business</span>
+            </Button>
+          </Link>
 
           <Button onClick={handleExport} disabled={trips.length === 0} variant="outline" size="sm" className="hidden sm:inline-flex">
             <Download className="mr-2 h-4 w-4" />
@@ -128,6 +134,13 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                 <DropdownMenuItem asChild>
+                    <Link href="/app/business/new">
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        <span>List Your Business</span>
+                    </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />

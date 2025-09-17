@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, DollarSign, Gem, UserCheck, UserPlus } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, DollarSign, Gem, UserCheck, UserPlus, Wand2, Loader2 } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { transportationIcons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
@@ -86,10 +86,9 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
     });
   };
 
-  const getTripEstimates = async () => {
-    if (!trip.originCoords || !trip.destinationCoords) return;
+  const getTripCO2 = async () => {
+    if (!trip.originCoords || !trip.destinationCoords || co2 != null) return;
     
-    // CO2 Estimation
     setIsLoadingCo2(true);
     try {
       const result = await estimateCO2({
@@ -103,29 +102,36 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
     } finally {
       setIsLoadingCo2(false);
     }
+  }
 
-    // Hidden Gem Suggestion for most recent trip
-    if (isMostRecent) {
-        setIsLoadingGem(true);
-        try {
-          const gem = await suggestHiddenGem({
-            destinationName: trip.destination,
-            destinationCoords: { latitude: trip.destinationCoords.lat, longitude: trip.destinationCoords.lon },
-            tripPurpose: trip.purpose,
-          });
-          setHiddenGem(gem);
-        } catch(error) {
-            console.error("Failed to suggest hidden gem:", error);
-        } finally {
-          setIsLoadingGem(false);
-        }
+  const getHiddenGem = async () => {
+    if (!trip.destinationCoords) return;
+    setIsLoadingGem(true);
+    setHiddenGem(null);
+    try {
+      const gem = await suggestHiddenGem({
+        destinationName: trip.destination,
+        destinationCoords: { latitude: trip.destinationCoords.lat, longitude: trip.destinationCoords.lon },
+        tripPurpose: trip.purpose,
+      });
+      setHiddenGem(gem);
+    } catch(error) {
+        console.error("Failed to suggest hidden gem:", error);
+        toast({
+            variant: "destructive",
+            title: "Suggestion Failed",
+            description: "Could not fetch a hidden gem at this time.",
+        })
+    } finally {
+        setIsLoadingGem(false);
     }
   }
 
+
   useEffect(() => {
-    getTripEstimates();
+    getTripCO2();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trip.id, isMostRecent]);
+  }, [trip.id]);
 
   const isShared = trip.participants.length > 1;
   
@@ -258,15 +264,25 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
           </AlertDialog>
         </div>
       </div>
-      {isMostRecent && hiddenGem && (
-        <div className="p-4 pt-0 sm:p-6 sm:pt-0">
-          <Alert className="border-primary/50 bg-primary/5">
-            <Gem className="h-4 w-4 text-primary" />
-            <AlertTitle className="text-primary font-bold">Local Gem: {hiddenGem.name}</AlertTitle>
-            <AlertDescription>
-              <p>{hiddenGem.reason}</p>
-            </AlertDescription>
-          </Alert>
+      {(isMostRecent || trip.isNicePlace) && (
+        <div className="border-t p-4 pt-4 sm:p-6 sm:pt-4 space-y-4">
+             {isMostRecent && (
+                 <div className='space-y-2'>
+                    <Button onClick={getHiddenGem} disabled={isLoadingGem} variant="outline" size="sm">
+                        {isLoadingGem ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                        {hiddenGem ? 'Refresh Suggestion' : 'Suggest a Local Gem'}
+                    </Button>
+                    {hiddenGem && (
+                        <Alert className="border-primary/50 bg-primary/5">
+                            <Gem className="h-4 w-4 text-primary" />
+                            <AlertTitle className="text-primary font-bold">{hiddenGem.name} ({hiddenGem.category})</AlertTitle>
+                            <AlertDescription>
+                            <p>{hiddenGem.reason}</p>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                </div>
+             )}
         </div>
       )}
     </Card>
