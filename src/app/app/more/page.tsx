@@ -1,11 +1,14 @@
 
 'use client';
 
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useTripStore } from "@/hooks/use-trip-store";
-import { Download, Briefcase, LogOut } from "lucide-react";
+import { Download, Briefcase, LogOut, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
@@ -17,6 +20,22 @@ export default function MorePage() {
     const { logout } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const [emergencyContact, setEmergencyContact] = useState('');
+
+    useEffect(() => {
+        const savedContact = localStorage.getItem('emergencyContact');
+        if (savedContact) {
+            setEmergencyContact(savedContact);
+        }
+    }, []);
+
+    const handleSaveContact = () => {
+        localStorage.setItem('emergencyContact', emergencyContact);
+        toast({
+            title: "Emergency Contact Saved",
+            description: "Your emergency contact number has been updated.",
+        });
+    };
 
     const handleExport = () => {
         try {
@@ -60,6 +79,25 @@ export default function MorePage() {
                 <div className="max-w-2xl mx-auto">
                     <h2 className="text-2xl font-bold font-headline text-foreground mb-6">More Options</h2>
                     <div className="space-y-4">
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2"><Phone /> Emergency Contact</CardTitle>
+                                <CardDescription>Set a phone number to call in an emergency from the map screen.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <Label htmlFor="emergency-contact">Phone Number</Label>
+                                    <Input 
+                                        id="emergency-contact"
+                                        type="tel"
+                                        value={emergencyContact}
+                                        onChange={(e) => setEmergencyContact(e.target.value)}
+                                        placeholder="Enter phone number"
+                                    />
+                                </div>
+                                <Button onClick={handleSaveContact} disabled={!emergencyContact}>Save Contact</Button>
+                            </CardContent>
+                        </Card>
                         <Card>
                              <CardContent className="p-4 flex flex-col gap-2">
                                 <Link href="/app/business/new" className="w-full">

@@ -8,6 +8,19 @@ import type { Destination, GeoLocation } from "@/lib/location";
 import { useSearchParams } from "next/navigation";
 import type { Trip } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button";
+import { Phone } from "lucide-react";
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <p>A map is loading...</p>,
@@ -36,6 +49,14 @@ function MapPageContent() {
   const searchParams = useSearchParams();
   const tripId = searchParams.get('tripId');
   const [focusedTrip, setFocusedTrip] = useState<Trip | null>(null);
+  const [emergencyContact, setEmergencyContact] = useState<string | null>(null);
+
+  useEffect(() => {
+    const contact = localStorage.getItem('emergencyContact');
+    if (contact) {
+      setEmergencyContact(contact);
+    }
+  }, []);
 
   useEffect(() => {
     if (user && trips.length === 0) {
@@ -136,12 +157,38 @@ function MapPageContent() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative">
         <MapView 
             userLocation={mapUserLocation}
             destinations={destinations}
             showRoute={!!focusedTrip}
         />
+        {emergencyContact && (
+            <div className="absolute bottom-5 left-5 z-[1000] md:bottom-5">
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="lg" className="rounded-full w-20 h-20 shadow-lg">
+                            <Phone className="h-8 w-8" />
+                            <span className="sr-only">SOS</span>
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Emergency Call</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                You are about to call your emergency contact: {emergencyContact}. Do you want to proceed?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction asChild>
+                                <a href={`tel:${emergencyContact}`}>Call Now</a>
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        )}
       </main>
     </div>
   );
