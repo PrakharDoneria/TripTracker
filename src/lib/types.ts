@@ -15,5 +15,6 @@ export interface Trip {
   originCoords?: { lat: number, lon: number };
   destinationCoords?: { lat: number, lon: number };
   destinationImageUrl?: string;
+  destinationImageCoords?: { lat: number, lon: number };
   isNicePlace?: boolean;
 }

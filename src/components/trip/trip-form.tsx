@@ -50,6 +50,7 @@ const formSchema = z.object({
   notes: z.string().max(500, "Notes are too long").optional(),
   expenses: z.coerce.number().min(0, "Cannot be negative").optional(),
   destinationImageUrl: z.string().optional(),
+  destinationImageCoords: z.object({ lat: z.number(), lon: z.number() }).optional(),
   isNicePlace: z.boolean().optional(),
 }).refine((data) => data.endTime > data.startTime, {
   message: "End time must be after start time.",
@@ -124,6 +125,12 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
   const startCamera = async () => {
     stopCamera();
     try {
+      // Get location for image
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        form.setValue('destinationImageCoords', { lat: latitude, lon: longitude });
+      });
+
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -174,6 +181,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
         setOriginValue(initialOrigin);
         handleOriginSelect(initialOrigin)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialOrigin]);
 
   useEffect(() => {

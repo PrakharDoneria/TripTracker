@@ -31,6 +31,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 interface TripCardProps {
   trip: Trip;
+  isMostRecent?: boolean;
 }
 
 const purposeIcons = {
@@ -40,7 +41,7 @@ const purposeIcons = {
   other: StickyNote
 };
 
-export function TripCard({ trip }: TripCardProps) {
+export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
   const Icon = transportationIcons[trip.mode];
   const PurposeIcon = purposeIcons[trip.purpose || 'other'];
   const { deleteTrip } = useTripStore();
@@ -91,26 +92,28 @@ export function TripCard({ trip }: TripCardProps) {
       setIsLoadingCo2(false);
     }
 
-    // Hidden Gem Suggestion
-    setIsLoadingGem(true);
-    try {
-      const gem = await suggestHiddenGem({
-        destinationName: trip.destination,
-        destinationCoords: { latitude: trip.destinationCoords.lat, longitude: trip.destinationCoords.lon },
-        tripPurpose: trip.purpose,
-      });
-      setHiddenGem(gem);
-    } catch(error) {
-        console.error("Failed to suggest hidden gem:", error);
-    } finally {
-      setIsLoadingGem(false);
+    // Hidden Gem Suggestion for most recent trip
+    if (isMostRecent) {
+        setIsLoadingGem(true);
+        try {
+          const gem = await suggestHiddenGem({
+            destinationName: trip.destination,
+            destinationCoords: { latitude: trip.destinationCoords.lat, longitude: trip.destinationCoords.lon },
+            tripPurpose: trip.purpose,
+          });
+          setHiddenGem(gem);
+        } catch(error) {
+            console.error("Failed to suggest hidden gem:", error);
+        } finally {
+          setIsLoadingGem(false);
+        }
     }
   }
 
   useEffect(() => {
     getTripEstimates();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trip.id]);
+  }, [trip.id, isMostRecent]);
   
   return (
     <Card className="hover:shadow-md transition-shadow duration-300 relative group flex flex-col">

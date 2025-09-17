@@ -20,13 +20,12 @@ const nextTripPrompt = ai.definePrompt({
     name: 'nextTripPrompt',
     input: { schema: SuggestNextTripInputSchema },
     output: { schema: SuggestNextTripOutputSchema },
-    prompt: `You are an intelligent travel assistant that predicts a user's next move. Your goal is to analyze their recent travel history and suggest their next trip in a way that feels personal and predictive.
+    prompt: `You are an intelligent travel assistant that predicts a user's next move. Your goal is to analyze their recent travel history to suggest a new, interesting, and relevant trip, encouraging them to discover new places.
 
-Analyze the user's last 5 trips to identify patterns. Look for:
-- Recurring destinations (e.g., always goes to 'Office' on weekday mornings).
-- Common trip purposes (e.g., frequent 'errands' on weekends).
-- Sequences of trips (e.g., 'Gym' then 'Cafe').
-- Time-based habits (e.g., 'Park' on Sunday afternoons).
+Analyze the user's last 5 trips to identify patterns, but prioritize suggesting something new. Look for:
+- Recurring destinations to understand habits (e.g., 'Office' on weekdays).
+- Common trip purposes (e.g., 'leisure' on weekends).
+- Types of places they visit (e.g., parks, cafes, museums).
 
 User's last 5 trips:
 {{#if recentTrips}}
@@ -41,14 +40,16 @@ No recent trip data available.
 The user is currently at: {{{currentLocation}}}
 {{/if}}
 
-Based on these patterns, suggest the most likely next trip. Your suggestion should include a destination, a purpose, and a short, friendly reason that shows you understand their habits.
+Based on these patterns, suggest a *new destination* that the user has not visited recently but might enjoy. For example, if they often visit 'City Park', suggest a different park like 'Riverside Gardens'. If they frequent cafes, suggest a new, highly-rated cafe in a different neighborhood.
+
+Your suggestion should include a new destination, a likely purpose, and a short, friendly reason that shows you understand their habits while encouraging exploration.
 
 Example Reasoning:
-- "Since it's a weekday morning, I'm guessing you're heading to the Office for work."
-- "You've been to the Gym a lot lately. Time for another session?"
-- "After your morning errands, how about a relaxing stop at the 'City Cafe' like you sometimes do?"
+- "You visit parks a lot on weekends. How about exploring the beautiful 'Hillside Nature Reserve' this Saturday?"
+- "I see you enjoy trying different coffee shops. I'd recommend 'The Corner Grind', a popular local spot you haven't been to yet."
+- "Since you often run errands in the city center, maybe check out the 'Artisan Market' nearby for a change of pace."
 
-Generate a single, highly relevant suggestion. If there isn't a strong pattern, you can make a more general suggestion based on the most frequent activity.
+Generate a single, highly relevant suggestion for a new experience. Avoid suggesting a trip they have taken in their last 5 trips.
 `,
 });
 

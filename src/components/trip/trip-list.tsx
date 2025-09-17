@@ -19,14 +19,13 @@ export function TripList({ trips }: TripListProps) {
     );
   }
 
+  const sortedTrips = trips.slice().sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+
   return (
     <div className="space-y-4">
-      {trips
-        .slice()
-        .sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
-        .map((trip) => (
-          <TripCard key={trip.id} trip={trip} />
-        ))}
+      {sortedTrips.map((trip, index) => (
+          <TripCard key={trip.id} trip={trip} isMostRecent={index === 0} />
+      ))}
     </div>
   );
 }
