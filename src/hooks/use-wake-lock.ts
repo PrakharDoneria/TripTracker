@@ -15,7 +15,7 @@ export function useWakeLock(): string {
   const wakeLockSentinel = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
-    // Check if the Screen Wake Lock API is supported by the browser.
+    // This effect now runs only on the client, after the initial render.
     if (!('wakeLock' in navigator)) {
       setStatus('unsupported');
       return;
@@ -42,7 +42,7 @@ export function useWakeLock(): string {
 
     // Re-acquire the wake lock when the page visibility changes (e.g., user tabs back).
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && !wakeLockSentinel.current) {
+      if (document.visibilityState === 'visible' && wakeLockSentinel.current === null) {
         requestWakeLock();
       }
     };
@@ -57,7 +57,7 @@ export function useWakeLock(): string {
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, []); // The empty dependency array ensures this runs only once on the client on mount.
 
   return status;
 }
