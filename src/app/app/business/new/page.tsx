@@ -1,11 +1,75 @@
 
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import PlaceSearch, { type Place } from '@/components/trip/place-search';
+import { useBusinessStore } from '@/hooks/use-business-store';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+
+const formSchema = z.object({
+    name: z.string().min(2, "Business name is too short."),
+    contactNumber: z.string().min(10, "Please enter a valid contact number."),
+    website: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
+});
+
+type BusinessFormValues = z.infer<typeof formSchema>;
 
 export default function NewBusinessPage() {
+    const router = useRouter();
+    const { user } = useAuth();
+    const { addBusiness } = useBusinessStore();
+    const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+    const [location, setLocation] = useState<Place | null>(null);
+
+    const form = useForm<BusinessFormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: '',
+            contactNumber: '',
+            website: '',
+        }
+    });
+
+    async function onSubmit(values: BusinessFormValues) {
+        if (!user) {
+            toast({ variant: 'destructive', title: "Not authenticated" });
+            return;
+        }
+        if (!location) {
+            toast({ variant: 'destructive', title: "Location required", description: "Please select a location for your business." });
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await addBusiness({
+                ...values,
+                coords: { lat: location.lat, lon: location.lon },
+                address: location.label,
+                creatorId: user.uid,
+            });
+            toast({ title: "Business Listed!", description: "Your business is now visible on the map." });
+            router.push('/app/map');
+        } catch (error) {
+            console.error("Failed to add business:", error);
+            toast({ variant: 'destructive', title: "Submission Failed", description: "Could not list your business. Please try again." });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
             <Header />
@@ -16,15 +80,61 @@ export default function NewBusinessPage() {
                             <CardTitle className="font-headline text-2xl">List Your Business</CardTitle>
                             <CardDescription>
                                 Add your business to the TripTracker map to be discovered by travelers.
-                                This feature is coming soon!
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="text-center">
-                            <p className="text-muted-foreground mb-4">
-                                Soon, you'll be able to add your cafe, shop, or hotel to our map.
-                                Check back for updates!
-                            </p>
-                            <Button disabled>Coming Soon</Button>
+                        <CardContent>
+                            <Form {...form}>
+                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="name"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Business Name</FormLabel>
+                                                <FormControl><Input placeholder="e.g., The Corner Cafe" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormItem>
+                                        <FormLabel>Location</FormLabel>
+                                        <FormControl>
+                                            <PlaceSearch
+                                                instanceId="business-location-search"
+                                                placeholder="Search for your business address"
+                                                onPlaceSelect={setLocation}
+                                            />
+                                        </FormControl>
+                                        {!location && <FormMessage>Location is required.</FormMessage>}
+                                    </FormItem>
+                                    <FormField
+                                        control={form.control}
+                                        name="contactNumber"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Contact Number</FormLabel>
+                                                <FormControl><Input type="tel" placeholder="e.g., +1 555-123-4567" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="website"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Website (Optional)</FormLabel>
+                                                <FormControl><Input placeholder="https://example.com" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <Button type="submit" className="w-full" disabled={isLoading}>
+                                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        List My Business
+                                    </Button>
+                                </form>
+                            </Form>
                         </CardContent>
                     </Card>
                 </div>

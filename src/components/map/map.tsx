@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { GeoLocation, Destination } from '@/lib/location';
 import 'leaflet/dist/leaflet.css';
 import { Button } from '../ui/button';
-import { Navigation } from 'lucide-react';
+import { Navigation, Briefcase } from 'lucide-react';
 
 interface MapViewProps {
   userLocation: GeoLocation | null;
@@ -17,6 +17,15 @@ interface MapViewProps {
 }
 
 const GEOAPIFY_API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
+
+// Custom Business Icon
+const businessIcon = L.divIcon({
+  html: `<div style="background-color: #6d28d9; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5);"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>`,
+  className: 'custom-business-icon',
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
 
 const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w-full', showRoute = false }: MapViewProps) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -107,7 +116,7 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
              if (destination.latitude && destination.longitude) {
                 const destLatLng = L.latLng(destination.latitude, destination.longitude);
         
-                const destinationIcon = L.icon({
+                const defaultIcon = L.icon({
                     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
                     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
                     iconSize: [25, 41],
@@ -116,9 +125,20 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
                     shadowSize: [41, 41]
                 });
 
-                const marker = L.marker(destLatLng, { icon: destinationIcon })
+                const iconToUse = destination.isBusiness ? businessIcon : defaultIcon;
+                
+                let popupContent = `<b>${destination.name}</b>`;
+                if(destination.isBusiness) {
+                    popupContent += `<br/>${destination.contactNumber}`;
+                    if(destination.website) {
+                        popupContent += `<br/><a href="${destination.website}" target="_blank" rel="noopener noreferrer">Website</a>`;
+                    }
+                }
+
+
+                const marker = L.marker(destLatLng, { icon: iconToUse })
                     .addTo(map)
-                    .bindPopup(destination.name);
+                    .bindPopup(popupContent);
                 destinationMarkersRef.current.push(marker);
              }
         });

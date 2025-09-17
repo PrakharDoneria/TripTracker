@@ -15,7 +15,7 @@ import {
   documentId,
   setDoc,
 } from 'firebase/firestore';
-import type { Trip, UserProfile } from './types';
+import type { Trip, UserProfile, Business } from './types';
 
 const db = getFirestore(app);
 
@@ -93,4 +93,23 @@ export const updateTripInFirestore = async (tripId: string, trip: Partial<Omit<T
 export const deleteTripFromFirestore = async (tripId: string) => {
     const tripDoc = doc(db, 'trips', tripId);
     await deleteDoc(tripDoc);
+};
+
+
+// --- Business Functions ---
+
+const businessesCollectionRef = collection(db, 'businesses');
+
+export const getBusinessesFromFirestore = async () => {
+    const businessSnapshot = await getDocs(businessesCollectionRef);
+    const businessList = businessSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { ...data, id: doc.id } as Business;
+    });
+    return businessList;
+};
+
+export const addBusinessToFirestore = async (business: Omit<Business, 'id'>) => {
+    const docRef = await addDoc(businessesCollectionRef, business);
+    return docRef.id;
 };

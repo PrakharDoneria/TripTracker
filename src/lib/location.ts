@@ -6,4 +6,7 @@ export interface GeoLocation {
 export interface Destination extends GeoLocation {
     name: string;
     isNicePlace?: boolean;
+    isBusiness?: boolean;
+    contactNumber?: string;
+    website?: string;
 }

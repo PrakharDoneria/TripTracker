@@ -31,3 +31,13 @@ export interface Trip {
   destinationImageCoords?: { lat: number, lon: number };
   isNicePlace?: boolean;
 }
+
+export interface Business {
+    id: string;
+    name: string;
+    contactNumber: string;
+    website?: string;
+    coords: { lat: number, lon: number };
+    address: string;
+    creatorId: string;
+}

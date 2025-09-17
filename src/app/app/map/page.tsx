@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
+import { useBusinessStore } from "@/hooks/use-business-store";
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <p>A map is loading...</p>,
@@ -44,6 +45,7 @@ function getDistanceInMeters(lat1: number, lon1: number, lat2: number, lon2: num
 function MapPageContent() {
   const { user } = useAuth();
   const { trips, fetchTrips, getTripById } = useTripStore();
+  const { businesses, fetchBusinesses } = useBusinessStore();
   const [liveUserLocation, setLiveUserLocation] = useState<GeoLocation | null>(null);
   const notifiedPlaces = useMemo(() => new Set<string>(), []);
   const searchParams = useSearchParams();
@@ -59,10 +61,11 @@ function MapPageContent() {
   }, []);
 
   useEffect(() => {
-    if (user && trips.length === 0) {
-      fetchTrips(user.uid);
+    if (user) {
+        if(trips.length === 0) fetchTrips(user.uid);
+        if(businesses.length === 0) fetchBusinesses();
     }
-  }, [user, trips, fetchTrips]);
+  }, [user, trips.length, fetchTrips, businesses.length, fetchBusinesses]);
 
   useEffect(() => {
     if (tripId) {
@@ -139,13 +142,25 @@ function MapPageContent() {
       ];
     }
     
-    return trips.map(trip => ({
+    const tripDestinations = trips.map(trip => ({
         latitude: trip.destinationCoords?.lat || 0,
         longitude: trip.destinationCoords?.lon || 0,
         name: trip.destination,
         isNicePlace: trip.isNicePlace,
     })).filter(d => d.latitude !== 0 && d.longitude !== 0);
-  }, [trips, focusedTrip]);
+
+    const businessDestinations = businesses.map(biz => ({
+        latitude: biz.coords.lat,
+        longitude: biz.coords.lon,
+        name: biz.name,
+        contactNumber: biz.contactNumber,
+        website: biz.website,
+        isBusiness: true,
+    }));
+
+    return [...tripDestinations, ...businessDestinations];
+
+  }, [trips, businesses, focusedTrip]);
 
   const mapUserLocation = useMemo(() => {
     if(focusedTrip && focusedTrip.originCoords) {
@@ -164,7 +179,7 @@ function MapPageContent() {
             showRoute={!!focusedTrip}
         />
         {emergencyContact && (
-            <div className="absolute bottom-5 left-5 z-[1000] md:bottom-5">
+            <div className="absolute bottom-20 left-5 z-[1000] md:bottom-5">
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="lg" className="rounded-full w-20 h-20 shadow-lg">
