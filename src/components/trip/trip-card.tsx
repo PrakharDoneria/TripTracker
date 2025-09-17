@@ -29,6 +29,7 @@ import Image from 'next/image';
 import { suggestHiddenGem } from '@/ai/flows/suggest-hidden-gem';
 import type { SuggestHiddenGemOutput } from '@/ai/schemas';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { useAuth } from '@/hooks/use-auth';
 
 interface TripCardProps {
   trip: Trip;
@@ -45,6 +46,7 @@ const purposeIcons = {
 export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
   const Icon = transportationIcons[trip.mode];
   const PurposeIcon = purposeIcons[trip.purpose || 'other'];
+  const { user } = useAuth();
   const { deleteTrip } = useTripStore();
   const { toast } = useToast();
   const [formattedTime, setFormattedTime] = useState('');
@@ -68,7 +70,8 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
   }, [trip.startTime, trip.endTime]);
 
   const handleDelete = () => {
-    deleteTrip(trip.id);
+    if (!user) return;
+    deleteTrip(user.uid, trip.id);
     toast({
         title: "Trip Deleted",
         description: "The trip has been removed from your trip chain.",

@@ -1,48 +1,59 @@
+
 'use client';
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Trip } from '@/lib/types';
-
-const initialTrips: Trip[] = [];
+import {
+    addTripToFirestore,
+    updateTripInFirestore,
+    deleteTripFromFirestore,
+    getTripsFromFirestore,
+} from '@/lib/firestore';
 
 interface TripState {
   trips: Trip[];
-  addTrip: (trip: Omit<Trip, 'id'>) => void;
-  updateTrip: (id: string, updatedTrip: Omit<Trip, 'id'>) => void;
-  deleteTrip: (id: string) => void;
+  isLoading: boolean;
+  fetchTrips: (userId: string) => Promise<void>;
+  addTrip: (userId: string, trip: Omit<Trip, 'id'>) => Promise<void>;
+  updateTrip: (userId: string, id: string, updatedTrip: Omit<Trip, 'id'>) => Promise<void>;
+  deleteTrip: (userId: string, id: string) => Promise<void>;
   getTripById: (id: string) => Trip | undefined;
+  clearTrips: () => void;
 }
 
-export const useTripStore = create<TripState>()(
-  persist(
-    (set, get) => ({
-      trips: initialTrips,
-      addTrip: (trip) =>
+export const useTripStore = create<TripState>()((set, get) => ({
+    trips: [],
+    isLoading: true,
+    fetchTrips: async (userId) => {
+        set({ isLoading: true });
+        try {
+            const trips = await getTripsFromFirestore(userId);
+            set({ trips: trips as Trip[], isLoading: false });
+        } catch (error) {
+            console.error("Error fetching trips:", error);
+            set({ isLoading: false });
+        }
+    },
+    addTrip: async (userId, trip) => {
+        const newTripId = await addTripToFirestore(userId, trip);
+        const newTrip = { ...trip, id: newTripId };
         set((state) => ({
-          trips: [{ ...trip, id: crypto.randomUUID() }, ...state.trips],
-        })),
-      updateTrip: (id, updatedTrip) =>
+            trips: [newTrip, ...state.trips].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()),
+        }));
+    },
+    updateTrip: async (userId, id, updatedTripData) => {
+        await updateTripInFirestore(userId, id, updatedTripData);
         set((state) => ({
             trips: state.trips.map((trip) =>
-                trip.id === id ? { ...trip, ...updatedTrip, id } : trip
-            ),
-        })),
-      deleteTrip: (id) =>
+                trip.id === id ? { ...trip, ...updatedTripData, id } : trip
+            ).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()),
+        }));
+    },
+    deleteTrip: async (userId, id) => {
+        await deleteTripFromFirestore(userId, id);
         set((state) => ({
             trips: state.trips.filter((trip) => trip.id !== id),
-        })),
-      getTripById: (id) => get().trips.find((trip) => trip.id === id),
-    }),
-    {
-      name: 'trip-storage', 
-      storage: createJSONStorage(() => localStorage, {
-        reviver: (key, value) => {
-          if (key === 'startTime' || key === 'endTime') {
-            return new Date(value as string);
-          }
-          return value;
-        },
-      }),
-    }
-  )
-)
+        }));
+    },
+    getTripById: (id) => get().trips.find((trip) => trip.id === id),
+    clearTrips: () => set({ trips: [] }),
+}));

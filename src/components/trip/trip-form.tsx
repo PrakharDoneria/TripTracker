@@ -33,6 +33,7 @@ import type { NudgeForMissingDataInput, AITripRecommendationOutput } from "@/ai/
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useTripStore } from "@/hooks/use-trip-store"
+import { useAuth } from "@/hooks/use-auth"
 import PlaceSearch, { type Place } from "./place-search"
 import { Textarea } from "../ui/textarea"
 import { transportationIcons } from "../icons"
@@ -74,6 +75,7 @@ interface TripFormProps {
 
 export function TripForm({ trip, onOriginChange, onDestinationChange, initialOrigin, prefilledDestination, prefilledPurpose }: TripFormProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const { toast } = useToast();
   const { trips, addTrip, updateTrip } = useTripStore();
   const [isDetecting, setIsDetecting] = useState(false);
@@ -224,7 +226,16 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
     }
   }
 
-  function onSubmit(data: TripFormValues) {
+  async function onSubmit(data: TripFormValues) {
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Not authenticated",
+            description: "You must be logged in to save a trip.",
+        });
+        return;
+    }
+
     if (!originCoords || !destinationCoords) {
       toast({
         variant: 'destructive',
@@ -234,23 +245,21 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
       return;
     }
     
+    const tripData = {
+        ...data,
+        originCoords,
+        destinationCoords,
+    };
+    
     if (trip) {
-        updateTrip(trip.id, {
-            ...data,
-            originCoords,
-            destinationCoords,
-        });
+        await updateTrip(user.uid, trip.id, tripData);
         toast({
             title: "Trip Updated!",
             description: "Your trip has been successfully updated.",
         });
         router.push('/app');
     } else {
-        addTrip({
-            ...data,
-            originCoords,
-            destinationCoords,
-        });
+        await addTrip(user.uid, tripData);
         toast({
           title: "Trip Saved!",
           description: "Your new trip has been added to your trip chain.",
