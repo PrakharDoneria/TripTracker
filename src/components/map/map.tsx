@@ -63,6 +63,7 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
         mapRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   // Update user marker when location changes
