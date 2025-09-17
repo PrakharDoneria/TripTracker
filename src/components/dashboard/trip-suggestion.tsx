@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Loader2, Lightbulb, ArrowRight, Bot } from 'lucide-react';
+import { Loader2, Lightbulb, ArrowRight } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { suggestNextTrip } from '@/ai/flows/suggest-next-trip';
 import type { SuggestNextTripOutput } from '@/ai/schemas';
@@ -49,14 +50,14 @@ export function TripSuggestion({ trips }: TripSuggestionProps) {
   }, [trips]);
 
   return (
-    <Card className="col-span-1 lg:col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
+    <Card className="col-span-1 lg:col-span-1 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">AI Trip Suggestion</CardTitle>
-        <CardDescription>Intelligent predictions based on your unique travel patterns.</CardDescription>
+        <CardDescription className="text-slate-400">Intelligent predictions based on your unique travel patterns.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="w-full h-full relative">
-            <Image src="https://picsum.photos/400/400" data-ai-hint="futuristic interface" alt="AI suggestion background" layout="fill" className="object-cover rounded-lg" />
+            <Image src="https://picsum.photos/seed/ai/400/400" data-ai-hint="futuristic interface" alt="AI suggestion background" layout="fill" className="object-cover rounded-lg" />
             <div className="absolute inset-0 bg-black/60 rounded-lg p-6 flex flex-col items-center justify-center text-center">
                 {isLoading && (
                     <div className="flex flex-col items-center gap-2 text-white/80">
@@ -81,7 +82,7 @@ export function TripSuggestion({ trips }: TripSuggestionProps) {
                             <p className="text-2xl font-bold text-white">{suggestion.suggestedDestination}</p>
                             <p className="text-primary capitalize font-medium">{suggestion.suggestedPurpose}</p>
                         </div>
-                        <Link href={`/trips/new?destination=${encodeURIComponent(suggestion.suggestedDestination)}&purpose=${encodeURIComponent(suggestion.suggestedPurpose)}`}>
+                        <Link href={`/app/trips/new?destination=${encodeURIComponent(suggestion.suggestedDestination)}&purpose=${encodeURIComponent(suggestion.suggestedPurpose)}`}>
                             <Button variant="secondary" className="mt-4">
                                 Start this trip <ArrowRight className="ml-2"/>
                             </Button>

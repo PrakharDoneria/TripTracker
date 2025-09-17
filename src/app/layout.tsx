@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import 'leaflet/dist/leaflet.css';
+import { AuthProvider } from '@/hooks/use-auth';
 
 
 export const metadata: Metadata = {
@@ -22,11 +23,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <meta name="theme-color" content="#87CEEB" />
+        <meta name="theme-color" content="#1e3a8a" />
       </head>
       <body className="font-body antialiased">
-        {children}
-        <Toaster />
+        <AuthProvider>
+          {children}
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

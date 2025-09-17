@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useEffect, useState, useRef, useCallback } from "react"
@@ -243,7 +244,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
             title: "Trip Updated!",
             description: "Your trip has been successfully updated.",
         });
-        router.push('/');
+        router.push('/app');
     } else {
         addTrip({
             ...data,
@@ -254,7 +255,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
           title: "Trip Saved!",
           description: "Your new trip has been added to your trip chain.",
         });
-        router.push('/');
+        router.push('/app');
     }
   }
 

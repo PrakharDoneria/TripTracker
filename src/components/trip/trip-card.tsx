@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -193,7 +194,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
         </div>
 
         <div className="absolute top-4 right-4 flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-          <Link href={`/trips/${trip.id}/edit`}>
+          <Link href={`/app/trips/${trip.id}/edit`}>
               <Button variant="ghost" size="icon">
                   <Edit className="h-4 w-4" />
                   <span className="sr-only">Edit Trip</span>
