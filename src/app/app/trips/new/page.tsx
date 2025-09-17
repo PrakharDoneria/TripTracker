@@ -67,10 +67,10 @@ function NewTripForm() {
   }, [origin, destination]);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    <div className="grid gap-8 md:grid-cols-2">
         <div>
             <h2 className="text-2xl font-bold mb-4 font-headline text-foreground">Record a New Trip</h2>
-            <div className="lg:sticky lg:top-20">
+            <div className="md:sticky md:top-20">
                 <TripForm 
                     onOriginChange={setOrigin}
                     onDestinationChange={setDestination}
@@ -80,7 +80,7 @@ function NewTripForm() {
                 />
             </div>
         </div>
-        <div className="rounded-lg overflow-hidden h-[400px] lg:h-auto lg:max-h-[calc(100vh-8rem)] lg:sticky lg:top-20">
+        <div className="rounded-lg overflow-hidden h-[400px] md:h-auto md:max-h-[calc(100vh-8rem)] md:sticky md:top-20">
             <MapView 
                 destinations={destinations}
                 userLocation={userLocation}

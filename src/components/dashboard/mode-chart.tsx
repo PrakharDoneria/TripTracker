@@ -30,7 +30,7 @@ export function ModeChart({ trips }: ModeChartProps) {
                 <CardTitle className="text-2xl font-bold">Transportation Modes</CardTitle>
                 <CardDescription>A breakdown of your travel methods.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center p-6 relative min-h-[250px]">
+            <CardContent className="flex-1 flex items-center justify-center p-6 relative">
                  {data.length === 0 ? (
                     <p className="text-muted-foreground">Add trips to see your travel habits.</p>
                 ) : (

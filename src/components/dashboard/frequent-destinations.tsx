@@ -29,7 +29,7 @@ export function FrequentDestinations({ trips }: FrequentDestinationsProps) {
                 <CardTitle className="text-2xl font-bold">Frequent Destinations</CardTitle>
                 <CardDescription>Your most visited places.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center p-6 relative min-h-[250px]">
+            <CardContent className="flex-1 flex items-center justify-center p-6 relative">
                 {destinations.length === 0 ? (
                      <p className="text-muted-foreground">No destinations recorded yet.</p>
                 ) : (
