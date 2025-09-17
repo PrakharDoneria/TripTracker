@@ -179,11 +179,11 @@ function MapPageContent() {
             showRoute={!!focusedTrip}
         />
         {emergencyContact && (
-            <div className="absolute bottom-20 left-5 z-[1000] md:bottom-5">
+            <div className="absolute top-5 left-5 z-[1000]">
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="lg" className="rounded-full w-20 h-20 shadow-lg">
-                            <Phone className="h-8 w-8" />
+                        <Button variant="destructive" size="lg" className="rounded-full w-16 h-16 shadow-lg">
+                            <Phone className="h-7 w-7" />
                             <span className="sr-only">SOS</span>
                         </Button>
                     </AlertDialogTrigger>

@@ -213,7 +213,7 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
     <div className="relative h-full w-full">
         <div ref={mapContainerRef} className={className} style={{ height: 'calc(100vh - 4rem)' }}></div>
         {showRoute && (
-            <div className="absolute bottom-20 right-5 z-[1000] md:bottom-5">
+            <div className="absolute top-5 right-5 z-[1000]">
                 <Button onClick={handleStartNavigation} size="lg">
                     <Navigation className="mr-2 h-5 w-5" />
                     Start Navigation
