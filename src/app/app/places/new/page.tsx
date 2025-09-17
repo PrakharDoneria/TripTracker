@@ -18,6 +18,7 @@ import dynamic from 'next/dynamic';
 import type { Destination, GeoLocation } from '@/lib/location';
 import { usePlaceStore } from '@/hooks/use-place-store';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <div className="h-[200px] bg-muted rounded-lg animate-pulse" />,
@@ -29,6 +30,7 @@ const formSchema = z.object({
     description: z.string().max(200, "Description is too long").optional(),
     latitude: z.coerce.number().min(-90).max(90),
     longitude: z.coerce.number().min(-180).max(180),
+    isPublic: z.boolean().default(false),
 });
 
 type PlaceFormValues = z.infer<typeof formSchema>;
@@ -48,6 +50,7 @@ export default function NewPlacePage() {
             description: '',
             latitude: 8.5241, // Default to Trivandrum
             longitude: 76.9366,
+            isPublic: false,
         }
     });
     
@@ -67,7 +70,7 @@ export default function NewPlacePage() {
 
     const mapDestination = useMemo((): Destination[] => {
         if(lat !== undefined && lon !== undefined) {
-             return [{ latitude: lat, longitude: lon, name: form.getValues('name') || 'New Place' }];
+             return [{ latitude: lat, longitude: lon, name: form.getValues('name') || 'New Place', isCustomPlace: true }];
         }
         return [];
     }, [lat, lon, form]);
@@ -90,6 +93,7 @@ export default function NewPlacePage() {
                 name: values.name,
                 description: values.description || '',
                 coords: { lat: values.latitude, lon: values.longitude },
+                isPublic: values.isPublic,
             });
             toast({ title: "Place Saved!", description: "Your custom place has been added to the map." });
             router.push('/app/map');
@@ -167,6 +171,29 @@ export default function NewPlacePage() {
                                             )}
                                         />
                                     </div>
+
+                                    <FormField
+                                        control={form.control}
+                                        name="isPublic"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                            <FormControl>
+                                                <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <div className="space-y-1 leading-none">
+                                                <FormLabel>
+                                                Share with community
+                                                </FormLabel>
+                                                <FormDescription>
+                                                 Make this place visible to other users on the map.
+                                                </FormDescription>
+                                            </div>
+                                            </FormItem>
+                                        )}
+                                        />
                                     
                                     <Button type="submit" className="w-full" disabled={isLoading}>
                                         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

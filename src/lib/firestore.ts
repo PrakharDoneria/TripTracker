@@ -14,6 +14,7 @@ import {
   writeBatch,
   documentId,
   setDoc,
+  or,
 } from 'firebase/firestore';
 import type { Trip, UserProfile, Business, Place } from './types';
 
@@ -118,7 +119,10 @@ export const addBusinessToFirestore = async (business: Omit<Business, 'id'>) => 
 const placesCollectionRef = collection(db, 'places');
 
 export const getPlacesFromFirestore = async (userId: string) => {
-    const q = query(placesCollectionRef, where('creatorId', '==', userId));
+    const q = query(placesCollectionRef, or(
+        where('creatorId', '==', userId),
+        where('isPublic', '==', true)
+    ));
     const placeSnapshot = await getDocs(q);
     const placeList = placeSnapshot.docs.map(doc => {
         const data = doc.data();

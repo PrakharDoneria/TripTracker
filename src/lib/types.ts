@@ -48,4 +48,5 @@ export interface Place {
     name: string;
     description: string;
     coords: { lat: number, lon: number };
+    isPublic?: boolean;
 }
