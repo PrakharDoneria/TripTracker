@@ -221,7 +221,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
           </AlertDialog>
         </div>
       </div>
-      {hiddenGem && (
+      {isMostRecent && hiddenGem && (
         <div className="p-4 pt-0 sm:p-6 sm:pt-0">
           <Alert className="border-primary/50 bg-primary/5">
             <Gem className="h-4 w-4 text-primary" />
