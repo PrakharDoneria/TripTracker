@@ -24,6 +24,10 @@ export const useTripStore = create<TripState>()((set, get) => ({
     trips: [],
     isLoading: true,
     fetchTrips: async (userId) => {
+        // Prevent refetching if already loaded
+        if (get().trips.length > 0 && !get().isLoading) {
+            return;
+        }
         set({ isLoading: true });
         try {
             const trips = await getTripsFromFirestore(userId);

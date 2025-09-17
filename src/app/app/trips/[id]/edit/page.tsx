@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 export default function EditTripPage() {
     const router = useRouter();
     const params = useParams();
-    const { getTripById, fetchTrips, trips } = useTripStore();
+    const { getTripById, fetchTrips, trips, isLoading: isTripStoreLoading } = useTripStore();
     const { user } = useAuth();
     const [trip, setTrip] = useState<Trip | undefined>(undefined);
     const [loading, setLoading] = useState(true);
@@ -20,31 +20,39 @@ export default function EditTripPage() {
     const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
     useEffect(() => {
-        const loadTrip = async () => {
-            if (user && trips.length === 0) {
-                await fetchTrips(user.uid);
+        if (user && !isTripStoreLoading) {
+            if (trips.length === 0) {
+                fetchTrips(user.uid);
             }
         }
-        loadTrip();
-    }, [user, fetchTrips, trips.length]);
+    }, [user, trips.length, fetchTrips, isTripStoreLoading]);
+
 
     useEffect(() => {
+        // Don't try to find the trip until the store is done loading
+        if (isTripStoreLoading) {
+            return;
+        }
+
         if (id && trips.length > 0) {
             const foundTrip = getTripById(id);
             if (foundTrip) {
                 setTrip(foundTrip);
             } else {
-                // Handle case where trip is not found
-                console.warn(`Trip with id ${id} not found, redirecting.`);
+                console.warn(`Trip with id ${id} not found after fetch, redirecting.`);
                 router.push('/app');
             }
-             setLoading(false);
-        } else if (trips.length > 0) {
-             setLoading(false);
+            setLoading(false);
+        } else if (trips.length === 0 && !isTripStoreLoading) {
+            // This case handles when fetch is complete but no trips were found for the user
+            console.warn(`No trips found for user, redirecting.`);
+            router.push('/app');
+            setLoading(false);
         }
-    }, [id, getTripById, router, trips]);
 
-    if (loading) {
+    }, [id, getTripById, router, trips, isTripStoreLoading]);
+
+    if (loading || isTripStoreLoading) {
         return (
              <div className="flex min-h-screen w-full flex-col bg-background">
                 <Header />
