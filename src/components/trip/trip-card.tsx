@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, DollarSign, Gem } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, DollarSign, Gem, UserCheck, UserPlus } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { transportationIcons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +29,8 @@ import { suggestHiddenGem } from '@/ai/flows/suggest-hidden-gem';
 import type { SuggestHiddenGemOutput } from '@/ai/schemas';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useAuth } from '@/hooks/use-auth';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 interface TripCardProps {
   trip: Trip;
@@ -70,8 +71,15 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
   }, [trip.startTime, trip.endTime]);
 
   const handleDelete = () => {
-    if (!user) return;
-    deleteTrip(user.uid, trip.id);
+    if (!user || trip.creatorId !== user.uid) {
+        toast({
+            variant: "destructive",
+            title: "Delete Failed",
+            description: "Only the trip creator can delete a shared trip.",
+        });
+        return;
+    }
+    deleteTrip(trip.id);
     toast({
         title: "Trip Deleted",
         description: "The trip has been removed from your trip chain.",
@@ -118,6 +126,8 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
     getTripEstimates();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trip.id, isMostRecent]);
+
+  const isShared = trip.participants.length > 1;
   
   return (
     <Card className="hover:shadow-md transition-shadow duration-300 relative group flex flex-col">
@@ -162,6 +172,29 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
                   <span>{trip.companions} companion{trip.companions > 1 ? 's' : ''}</span>
                 </div>
               )}
+              {isShared && (
+                 <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    <div className="flex items-center -space-x-2">
+                        <TooltipProvider>
+                        {trip.sharedWith?.map(participant => (
+                             <Tooltip key={participant.uid}>
+                                <TooltipTrigger>
+                                    <Avatar className='h-6 w-6 border-2 border-background'>
+                                        <AvatarFallback className='text-xs'>
+                                            {participant.email.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{participant.email}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        ))}
+                        </TooltipProvider>
+                    </div>
+                 </div>
+              )}
               {trip.purpose && (
                 <div className="flex items-center gap-2">
                   <PurposeIcon className="h-4 w-4" />
@@ -171,7 +204,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
                {trip.expenses && trip.expenses > 0 && (
                 <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
-                    <span>${trip.expenses.toFixed(2)}</span>
+                    <span>${trip.expenses.toFixed(2)}{isShared ? ' (shared)' : ''}</span>
                 </div>
               )}
               {co2 !== null && (
@@ -205,7 +238,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
           </Link>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={user?.uid !== trip.creatorId}>
                   <Trash2 className="h-4 w-4" />
                   <span className="sr-only">Delete Trip</span>
               </Button>
@@ -214,7 +247,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete this trip from your trip chain.
+                  This action cannot be undone. This will permanently delete this trip.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

@@ -11,8 +11,11 @@ import {
   query,
   where,
   Timestamp,
+  writeBatch,
+  documentId,
+  setDoc,
 } from 'firebase/firestore';
-import type { Trip } from './types';
+import type { Trip, UserProfile } from './types';
 
 const db = getFirestore(app);
 
@@ -27,13 +30,48 @@ const convertTimestampsToDates = (data: any): any => {
     return data;
 }
 
-const getTripsCollectionRef = (userId: string) => {
-    return collection(db, 'users', userId, 'trips');
+// --- User Profile Functions ---
+
+export const createUserProfile = async (user: { uid: string; email: string | null }) => {
+  if (!user.email) {
+    throw new Error("Cannot create profile for user without an email.");
+  }
+  const userRef = doc(db, 'users', user.uid);
+  const userProfile: UserProfile = {
+    uid: user.uid,
+    email: user.email,
+  };
+  await setDoc(userRef, userProfile);
+  return userProfile;
 };
 
+export const getUserProfile = async (uid: string) => {
+    const userRef = doc(db, 'users', uid);
+    const userSnap = await getDocs(query(collection(db, 'users'), where('uid', '==', uid)));
+    if (userSnap.empty) {
+        return null;
+    }
+    return userSnap.docs[0].data() as UserProfile;
+}
+
+export const findUserByEmail = async (email: string): Promise<UserProfile | null> => {
+    const usersQuery = query(collection(db, 'users'), where('email', '==', email));
+    const querySnapshot = await getDocs(usersQuery);
+    if (querySnapshot.empty) {
+        return null;
+    }
+    // Assuming email is unique
+    return querySnapshot.docs[0].data() as UserProfile;
+}
+
+
+// --- Trip Functions ---
+
+const tripsCollectionRef = collection(db, 'trips');
+
 export const getTripsFromFirestore = async (userId: string) => {
-    const tripsCollection = getTripsCollectionRef(userId);
-    const tripSnapshot = await getDocs(tripsCollection);
+    const q = query(tripsCollectionRef, where('participants', 'array-contains', userId));
+    const tripSnapshot = await getDocs(q);
     const tripList = tripSnapshot.docs.map(doc => {
         const data = doc.data();
         const convertedData = convertTimestampsToDates(data);
@@ -42,18 +80,17 @@ export const getTripsFromFirestore = async (userId: string) => {
     return tripList.sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
 };
 
-export const addTripToFirestore = async (userId: string, trip: Omit<Trip, 'id'>) => {
-    const tripsCollection = getTripsCollectionRef(userId);
-    const docRef = await addDoc(tripsCollection, trip);
+export const addTripToFirestore = async (trip: Omit<Trip, 'id'>) => {
+    const docRef = await addDoc(tripsCollectionRef, trip);
     return docRef.id;
 };
 
-export const updateTripInFirestore = async (userId: string, tripId: string, trip: Omit<Trip, 'id'>) => {
-    const tripDoc = doc(db, 'users', userId, 'trips', tripId);
+export const updateTripInFirestore = async (tripId: string, trip: Partial<Omit<Trip, 'id'>>) => {
+    const tripDoc = doc(db, 'trips', tripId);
     await updateDoc(tripDoc, trip);
 };
 
-export const deleteTripFromFirestore = async (userId: string, tripId: string) => {
-    const tripDoc = doc(db, 'users', userId, 'trips', tripId);
+export const deleteTripFromFirestore = async (tripId: string) => {
+    const tripDoc = doc(db, 'trips', tripId);
     await deleteDoc(tripDoc);
 };

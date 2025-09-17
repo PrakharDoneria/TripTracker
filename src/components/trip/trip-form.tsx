@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff, DollarSign } from "lucide-react"
+import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff, DollarSign, UserPlus, X, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,8 +23,8 @@ import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent } from "@/components/ui/card"
-import type { Trip, TransportationMode, TripPurpose } from "@/lib/types"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import type { Trip, TransportationMode, TripPurpose, TripParticipant } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { smartTripDetection } from "@/ai/flows/smart-trip-detection"
 import { nudgeForMissingData } from "@/ai/flows/nudge-for-missing-data"
@@ -40,6 +40,8 @@ import { transportationIcons } from "../icons"
 import { Destination, GeoLocation } from "@/lib/location"
 import { Checkbox } from "../ui/checkbox"
 import Image from "next/image"
+import { findUserByEmail } from "@/lib/firestore"
+import { Badge } from "../ui/badge"
 
 const formSchema = z.object({
   origin: z.string().min(2, "Origin is too short"),
@@ -90,6 +92,10 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
 
   const [originValue, setOriginValue] = useState<Place | null>(null)
   const [destinationValue, setDestinationValue] = useState<Place | null>(null);
+
+  const [sharedWith, setSharedWith] = useState<TripParticipant[]>(trip?.sharedWith || []);
+  const [friendEmail, setFriendEmail] = useState("");
+  const [isSearchingFriend, setIsSearchingFriend] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -174,6 +180,9 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
         setDestinationCoords(trip.destinationCoords)
         setDestinationValue({label: trip.destination, value: trip.destination, ...trip.destinationCoords})
       };
+      if (trip.sharedWith) {
+        setSharedWith(trip.sharedWith);
+      }
     }
     // Cleanup camera on unmount
     return () => stopCamera();
@@ -226,6 +235,38 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
     }
   }
 
+  const handleAddFriend = async () => {
+    if (!friendEmail) return;
+    if (friendEmail === user?.email) {
+      toast({ variant: "destructive", title: "You cannot add yourself." });
+      return;
+    }
+    if (sharedWith.some(p => p.email === friendEmail)) {
+        toast({ variant: "destructive", title: "User already added." });
+        return;
+    }
+
+    setIsSearchingFriend(true);
+    try {
+        const foundUser = await findUserByEmail(friendEmail);
+        if (foundUser) {
+            setSharedWith(prev => [...prev, foundUser]);
+            setFriendEmail("");
+        } else {
+            toast({ variant: "destructive", title: "User not found", description: "No user with that email exists." });
+        }
+    } catch(e) {
+        toast({ variant: "destructive", title: "Error finding user" });
+        console.error(e);
+    } finally {
+        setIsSearchingFriend(false);
+    }
+  }
+
+  const handleRemoveFriend = (uid: string) => {
+    setSharedWith(prev => prev.filter(p => p.uid !== uid));
+  }
+
   async function onSubmit(data: TripFormValues) {
     if (!user) {
         toast({
@@ -245,24 +286,29 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
       return;
     }
     
+    const participantUids = [user.uid, ...sharedWith.map(p => p.uid)];
+    
     const tripData = {
         ...data,
+        creatorId: trip?.creatorId || user.uid,
+        participants: participantUids,
+        sharedWith,
         originCoords,
         destinationCoords,
     };
     
     if (trip) {
-        await updateTrip(user.uid, trip.id, tripData);
+        await updateTrip(trip.id, tripData);
         toast({
             title: "Trip Updated!",
             description: "Your trip has been successfully updated.",
         });
         router.push('/app');
     } else {
-        await addTrip(user.uid, tripData);
+        await addTrip(tripData);
         toast({
           title: "Trip Saved!",
-          description: "Your new trip has been added to your trip chain.",
+          description: "Your new trip has been added and shared.",
         });
         router.push('/app');
     }
@@ -358,12 +404,12 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
         });
         setRecommendation(result);
     } catch (error) {
-        console.error(error);
-        toast({
-            variant: "destructive",
-            title: "Recommendation Failed",
-            description: "Could not get an AI recommendation at this time.",
-        });
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Recommendation Failed",
+        description: "Could not get an AI recommendation at this time.",
+      });
     } finally {
       setIsRecommending(false);
     }
@@ -449,6 +495,42 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
             <FormField control={form.control} name="companions" render={({ field }) => (
               <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
+            <Card className="bg-background/50">
+              <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2"><UserPlus /> Share Trip & Expenses</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <div className="flex gap-2">
+                      <Input 
+                          type="email" 
+                          placeholder="Enter friend's email" 
+                          value={friendEmail}
+                          onChange={(e) => setFriendEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddFriend();
+                            }
+                          }}
+                      />
+                      <Button type="button" onClick={handleAddFriend} disabled={isSearchingFriend || !friendEmail}>
+                          {isSearchingFriend ? <Loader2 className="animate-spin" /> : <Search />}
+                      </Button>
+                  </div>
+                  <div className="space-y-2">
+                      {sharedWith.map(person => (
+                          <Badge key={person.uid} variant="secondary" className="flex justify-between items-center text-sm">
+                              <span>{person.email}</span>
+                              <button type="button" onClick={() => handleRemoveFriend(person.uid)} className="ml-2 rounded-full hover:bg-muted-foreground/20 p-0.5">
+                                  <X className="h-3 w-3"/>
+                              </button>
+                          </Badge>
+                      ))}
+                  </div>
+                  {sharedWith.length > 0 && <FormDescription>This trip and its expenses will be shared with these friends.</FormDescription>}
+              </CardContent>
+            </Card>
+
             <FormField control={form.control} name="expenses" render={({ field }) => (
                 <FormItem>
                 <FormLabel>Trip Expenses</FormLabel>
@@ -458,6 +540,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
                         <Input type="number" min="0" placeholder="0.00" className="pl-8" {...field} />
                     </FormControl>
                 </div>
+                {sharedWith.length > 0 && <FormDescription>Total expense will be split among {sharedWith.length + 1} people.</FormDescription>}
                 <FormMessage />
                 </FormItem>
             )} />

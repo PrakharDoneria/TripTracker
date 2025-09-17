@@ -18,6 +18,7 @@ import {
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useTripStore } from './use-trip-store';
+import { createUserProfile, getUserProfile } from '@/lib/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -35,8 +36,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { clearTrips } = useTripStore();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      if (user) {
+        // Check for user profile and create if it doesn't exist
+        const profile = await getUserProfile(user.uid);
+        if (!profile) {
+          try {
+            await createUserProfile(user);
+          } catch(e) {
+            console.error("Failed to create user profile:", e);
+          }
+        }
+      }
       setLoading(false);
     });
 
