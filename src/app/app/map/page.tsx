@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
 import { useBusinessStore } from "@/hooks/use-business-store";
 import { usePlaceStore } from "@/hooks/use-place-store";
+import useWakeLock from "@/hooks/use-wake-lock";
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <p>A map is loading...</p>,
@@ -48,12 +49,21 @@ function MapPageContent() {
   const { trips, fetchTrips, getTripById } = useTripStore();
   const { businesses, fetchBusinesses } = useBusinessStore();
   const { places, fetchPlaces } = usePlaceStore();
+  const { requestWakeLock, releaseWakeLock } = useWakeLock();
   const [liveUserLocation, setLiveUserLocation] = useState<GeoLocation | null>(null);
   const notifiedPlaces = useMemo(() => new Set<string>(), []);
   const searchParams = useSearchParams();
   const tripId = searchParams.get('tripId');
   const [focusedTrip, setFocusedTrip] = useState<Trip | null>(null);
   const [emergencyContact, setEmergencyContact] = useState<string | null>(null);
+
+  useEffect(() => {
+    requestWakeLock();
+    return () => {
+      releaseWakeLock();
+    };
+  }, [requestWakeLock, releaseWakeLock]);
+
 
   useEffect(() => {
     const contact = localStorage.getItem('emergencyContact');
