@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, LayoutDashboard, Map, Plus, MoreHorizontal } from 'lucide-react';
+import { Home, LayoutDashboard, Map, Camera, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/app', icon: Home, label: 'Home' },
   { href: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/app/trips/new', icon: Plus, label: 'Add', isCentral: true },
+  { href: '/app/camera', icon: Camera, label: 'Camera', isCentral: true },
   { href: '/app/map', icon: Map, label: 'Map' },
   { href: '/app/more', icon: MoreHorizontal, label: 'More' },
 ];

@@ -32,7 +32,7 @@ export default function Home() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold font-headline text-foreground">My Trip Chain</h2>
             <Link href="/app/trips/new">
-              <Button className='hidden md:flex'>
+              <Button>
                 <Plus className="mr-2" />
                 Add Trip
               </Button>
