@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Camera as CameraIcon, VideoOff, Check, X } from 'lucide-react';
+import { Camera as CameraIcon, VideoOff, Check, X, SwitchCamera } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -15,6 +15,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+type FacingMode = 'user' | 'environment';
+
 export default function CameraPage() {
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -23,6 +25,7 @@ export default function CameraPage() {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [facingMode, setFacingMode] = useState<FacingMode>('environment');
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -32,11 +35,11 @@ export default function CameraPage() {
     }
   }, []);
 
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (mode: FacingMode) => {
     stopCamera();
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
         setHasCameraPermission(true);
         streamRef.current = stream;
         if (videoRef.current) {
@@ -89,7 +92,7 @@ export default function CameraPage() {
 
   const handleRetake = () => {
     setCapturedImage(null);
-    startCamera();
+    startCamera(facingMode);
   };
 
   const handleSave = () => {
@@ -104,60 +107,71 @@ export default function CameraPage() {
         setCapturedImage(null);
      }
   }
+  
+  const handleFlipCamera = () => {
+    const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newFacingMode);
+    startCamera(newFacingMode);
+  }
 
 
   return (
     <>
-      <div className="flex min-h-screen w-full flex-col bg-background">
+      <div className="flex min-h-screen w-full flex-col bg-black">
         <Header />
-        <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8 flex flex-col items-center">
-            <h2 className="text-2xl font-bold font-headline text-foreground mb-4">Capture a Memory</h2>
-            <div className="w-full max-w-md bg-card p-4 rounded-lg shadow-md relative">
-                <canvas ref={canvasRef} className="hidden"></canvas>
-                
-                {capturedImage ? (
-                    <div className="relative">
-                        <img src={capturedImage} alt="Captured" className="rounded-md w-full" />
-                    </div>
-                ) : (
-                    <div className="relative bg-muted rounded-md overflow-hidden aspect-video flex items-center justify-center">
-                        <video ref={videoRef} className={`w-full h-full object-cover ${!isCameraOn ? 'hidden' : ''}`} autoPlay playsInline muted />
-                        {!isCameraOn && (
-                             <div className="flex flex-col items-center text-muted-foreground">
-                                <VideoOff className="h-12 w-12 mb-2" />
-                                <p>Camera is off</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                <div className="mt-4 flex justify-center gap-4">
-                    {isCameraOn && !capturedImage && (
-                        <Button onClick={handleCapture} size="lg" className="rounded-full w-16 h-16">
-                            <CameraIcon />
-                        </Button>
-                    )}
-                    {capturedImage && (
-                         <>
-                            <Button onClick={handleRetake} variant="outline" size="lg">
-                                <X className="mr-2" /> Retake
-                            </Button>
-                            <Button onClick={handleSave} size="lg">
-                                <Check className="mr-2" /> Save
-                            </Button>
-                         </>
+        <main className="flex-1 flex flex-col relative">
+            <canvas ref={canvasRef} className="hidden"></canvas>
+            
+            {capturedImage ? (
+                <div className="flex-1 w-full h-full flex items-center justify-center bg-black">
+                    <img src={capturedImage} alt="Captured" className="w-full h-auto max-h-full object-contain" />
+                </div>
+            ) : (
+                <div className="flex-1 relative bg-muted flex items-center justify-center">
+                    <video ref={videoRef} className={`w-full h-full object-cover ${!isCameraOn ? 'hidden' : ''}`} autoPlay playsInline muted />
+                    {!isCameraOn && (
+                         <div className="flex flex-col items-center text-muted-foreground">
+                            <VideoOff className="h-12 w-12 mb-2" />
+                            <p>Camera is off</p>
+                        </div>
                     )}
                 </div>
+            )}
 
-                 {!isCameraOn && !capturedImage && (
-                    <div className="mt-4 flex justify-center">
-                        <Button onClick={startCamera}>
-                            <CameraIcon className="mr-2" /> Start Camera
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+              <div className="flex justify-center items-center gap-4">
+                  {isCameraOn && !capturedImage && (
+                      <>
+                        <div className='w-16 h-16' />
+                        <Button onClick={handleCapture} size="lg" className="rounded-full w-20 h-20 border-4 border-white bg-transparent hover:bg-white/20">
+                            <CameraIcon className="w-8 h-8 text-white" />
                         </Button>
-                    </div>
-                )}
-
+                        <Button onClick={handleFlipCamera} variant="outline" size="icon" className="rounded-full w-16 h-16 bg-black/30 border-white/50 text-white">
+                            <SwitchCamera className="w-6 h-6" />
+                        </Button>
+                      </>
+                  )}
+                  {capturedImage && (
+                       <>
+                          <Button onClick={handleRetake} variant="outline" size="lg" className="bg-black/50 text-white border-white/50">
+                              <X className="mr-2" /> Retake
+                          </Button>
+                          <Button onClick={handleSave} size="lg">
+                              <Check className="mr-2" /> Save
+                          </Button>
+                       </>
+                  )}
+              </div>
             </div>
+
+             {!isCameraOn && !capturedImage && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Button onClick={() => startCamera(facingMode)} size="lg">
+                        <CameraIcon className="mr-2" /> Start Camera
+                    </Button>
+                </div>
+            )}
+
             {hasCameraPermission === false && (
                 <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && setHasCameraPermission(null)}>
                     <AlertDialogContent>
