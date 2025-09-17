@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, DollarSign, Gem, Wand2, Loader2, Map as MapIcon } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, IndianRupee, Gem, Wand2, Loader2, Map as MapIcon } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { transportationIcons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
@@ -238,8 +238,8 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
               )}
                {trip.expenses && trip.expenses > 0 && (
                 <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    <span>${trip.expenses.toFixed(2)}{isShared ? ' (shared)' : ''}</span>
+                    <IndianRupee className="h-4 w-4" />
+                    <span>₹{trip.expenses.toFixed(2)}{isShared ? ' (shared)' : ''}</span>
                 </div>
               )}
               {co2 !== null && (

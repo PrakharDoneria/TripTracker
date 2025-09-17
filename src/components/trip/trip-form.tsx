@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff, DollarSign, UserPlus, X, Search } from "lucide-react"
+import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff, IndianRupee, UserPlus, X, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -535,7 +535,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
                 <FormItem>
                 <FormLabel>Trip Expenses</FormLabel>
                 <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <FormControl>
                         <Input type="number" min="0" placeholder="0.00" className="pl-8" {...field} />
                     </FormControl>

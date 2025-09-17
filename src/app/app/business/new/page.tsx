@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,13 +9,21 @@ import { z } from 'zod';
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import PlaceSearch, { type Place } from '@/components/trip/place-search';
 import { useBusinessStore } from '@/hooks/use-business-store';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import type { Destination } from '@/lib/location';
+
+const MapView = dynamic(() => import('@/components/map/map'), {
+  loading: () => <div className="h-[200px] bg-muted rounded-lg animate-pulse" />,
+  ssr: false
+});
+
 
 const formSchema = z.object({
     name: z.string().min(2, "Business name is too short."),
@@ -41,6 +49,13 @@ export default function NewBusinessPage() {
             website: '',
         }
     });
+
+    const mapDestination = useMemo((): Destination[] => {
+        if (location) {
+            return [{ latitude: location.lat, longitude: location.lon, name: location.label }];
+        }
+        return [];
+    }, [location]);
 
     async function onSubmit(values: BusinessFormValues) {
         if (!user) {
@@ -105,7 +120,15 @@ export default function NewBusinessPage() {
                                                 onPlaceSelect={setLocation}
                                             />
                                         </FormControl>
-                                        {!location && <FormMessage>Location is required.</FormMessage>}
+                                        {location && (
+                                            <div className="text-xs text-muted-foreground mt-2 space-y-2">
+                                                <p>Lat: {location.lat.toFixed(6)}, Lon: {location.lon.toFixed(6)}</p>
+                                                <div className="h-[200px] rounded-md overflow-hidden border">
+                                                    <MapView userLocation={null} destinations={mapDestination} />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {!location && form.formState.isSubmitted && <FormMessage>Location is required.</FormMessage>}
                                     </FormItem>
                                     <FormField
                                         control={form.control}
@@ -113,7 +136,7 @@ export default function NewBusinessPage() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Contact Number</FormLabel>
-                                                <FormControl><Input type="tel" placeholder="e.g., +1 555-123-4567" {...field} /></FormControl>
+                                                <FormControl><Input type="tel" placeholder="e.g., +91 9876543210" {...field} /></FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
