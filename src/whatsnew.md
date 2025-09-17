@@ -24,7 +24,7 @@ We've integrated a powerful suite of AI features to make TripTracker an intellig
 
 *   **Installable PWA**: TripTracker is now a fully-fledged Progressive Web App (PWA). A button to "Install App" will appear on supported mobile devices, allowing you to add it to your home screen for easy access.
 *   **Camera with Geolocation**: When you capture an image for your trip, the app now automatically saves the current GPS coordinates (latitude and longitude) with it.
-*   **Vibration Alerts**: Mark a destination as a "nice place to visit," and your device will vibrate when you get close to it, providing a helpful real-time alert.
+*   **Vibration Alerts**: Mark a destination as a "nice place to visit," and your device will vibrate when you get close to it, providing a helpful, real-time alert.
 
 ## Data & Functionality
 
