@@ -3,8 +3,11 @@
 import { Header } from "@/components/layout/header";
 import { useTripStore } from "@/hooks/use-trip-store";
 import dynamic from "next/dynamic";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import type { Destination, GeoLocation } from "@/lib/location";
+import { useSearchParams } from "next/navigation";
+import type { Trip } from "@/lib/types";
+import { useAuth } from "@/hooks/use-auth";
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <p>A map is loading...</p>,
@@ -24,10 +27,33 @@ function getDistanceInMeters(lat1: number, lon1: number, lat2: number, lon2: num
   return R * c; // Distance in meters
 }
 
-export default function MapPage() {
-  const { trips } = useTripStore();
+
+function MapPageContent() {
+  const { user } = useAuth();
+  const { trips, fetchTrips, getTripById } = useTripStore();
   const [liveUserLocation, setLiveUserLocation] = useState<GeoLocation | null>(null);
   const notifiedPlaces = useMemo(() => new Set<string>(), []);
+  const searchParams = useSearchParams();
+  const tripId = searchParams.get('tripId');
+  const [focusedTrip, setFocusedTrip] = useState<Trip | null>(null);
+
+  useEffect(() => {
+    if (user && trips.length === 0) {
+      fetchTrips(user.uid);
+    }
+  }, [user, trips, fetchTrips]);
+
+  useEffect(() => {
+    if (tripId) {
+      const foundTrip = getTripById(tripId);
+      if (foundTrip) {
+        setFocusedTrip(foundTrip);
+      }
+    } else {
+      setFocusedTrip(null);
+    }
+  }, [tripId, getTripById, trips]);
+
 
   useEffect(() => {
     if (typeof window !== 'undefined' && navigator.geolocation) {
@@ -77,23 +103,55 @@ export default function MapPage() {
   }, [trips, notifiedPlaces]);
 
   const destinations: Destination[] = useMemo(() => {
+    if (focusedTrip && focusedTrip.originCoords && focusedTrip.destinationCoords) {
+      return [
+        {
+          latitude: focusedTrip.originCoords.lat,
+          longitude: focusedTrip.originCoords.lon,
+          name: focusedTrip.origin,
+        },
+        {
+          latitude: focusedTrip.destinationCoords.lat,
+          longitude: focusedTrip.destinationCoords.lon,
+          name: focusedTrip.destination,
+        }
+      ];
+    }
+    
     return trips.map(trip => ({
         latitude: trip.destinationCoords?.lat || 0,
         longitude: trip.destinationCoords?.lon || 0,
         name: trip.destination,
         isNicePlace: trip.isNicePlace,
     })).filter(d => d.latitude !== 0 && d.longitude !== 0);
-  }, [trips]);
+  }, [trips, focusedTrip]);
+
+  const mapUserLocation = useMemo(() => {
+    if(focusedTrip && focusedTrip.originCoords) {
+      return { latitude: focusedTrip.originCoords.lat, longitude: focusedTrip.originCoords.lon };
+    }
+    return liveUserLocation;
+  }, [focusedTrip, liveUserLocation])
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
       <main className="flex-1">
         <MapView 
-            userLocation={liveUserLocation}
+            userLocation={mapUserLocation}
             destinations={destinations}
+            showRoute={!!focusedTrip}
         />
       </main>
     </div>
   );
+}
+
+
+export default function MapPage() {
+  return (
+    <Suspense fallback={<div>Loading Map...</div>}>
+      <MapPageContent />
+    </Suspense>
+  )
 }

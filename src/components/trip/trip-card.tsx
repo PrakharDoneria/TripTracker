@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, DollarSign, Gem, UserCheck, UserPlus, Wand2, Loader2 } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Users, Edit, Trash2, Leaf, StickyNote, Briefcase, ShoppingCart, FerrisWheel, Star, DollarSign, Gem, Wand2, Loader2, Map as MapIcon } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { transportationIcons } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
@@ -151,8 +151,8 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
           </div>
         )}
         <div className="flex-1">
-          <CardHeader className="pb-3 relative">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pr-20">
+          <CardHeader className="pb-3 relative pr-24">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <CardTitle className="flex items-center gap-2 text-lg flex-wrap">
                     <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                     <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
@@ -266,28 +266,31 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
 
        
       </div>
-      {(isMostRecent || trip.isNicePlace) && (
-        <div className="border-t p-4 pt-4 sm:p-6 sm:pt-4 space-y-4">
-             {isMostRecent && (
-                 <div className='space-y-2'>
+       <div className="border-t p-3 space-y-4 bg-muted/30">
+            <div className="flex items-center justify-start gap-2">
+                <Link href={`/app/map?tripId=${trip.id}`}>
+                    <Button variant="outline" size="sm">
+                        <MapIcon className="mr-2 h-4 w-4" />
+                        View in Map
+                    </Button>
+                </Link>
+                {(isMostRecent || trip.isNicePlace) && (
                     <Button onClick={getHiddenGem} disabled={isLoadingGem} variant="outline" size="sm">
                         {isLoadingGem ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                        {hiddenGem ? 'Refresh Suggestion' : 'Suggest a Local Gem'}
+                        {hiddenGem ? 'Refresh Gem' : 'Suggest Gem'}
                     </Button>
-                    {hiddenGem && (
-                        <Alert className="border-primary/50 bg-primary/5">
-                            <Gem className="h-4 w-4 text-primary" />
-                            <AlertTitle className="text-primary font-bold">{hiddenGem.name} ({hiddenGem.category})</AlertTitle>
-                            <AlertDescription>
-                            <p>{hiddenGem.reason}</p>
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                </div>
-             )}
+                )}
+            </div>
+             {hiddenGem && (
+                <Alert className="border-primary/50 bg-primary/5">
+                    <Gem className="h-4 w-4 text-primary" />
+                    <AlertTitle className="text-primary font-bold">{hiddenGem.name} ({hiddenGem.category})</AlertTitle>
+                    <AlertDescription>
+                    <p>{hiddenGem.reason}</p>
+                    </AlertDescription>
+                </Alert>
+            )}
         </div>
-      )}
     </Card>
   );
 }
-

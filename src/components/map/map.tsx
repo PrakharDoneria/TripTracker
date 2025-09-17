@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
@@ -9,11 +10,12 @@ interface MapViewProps {
   destinations: Destination[];
   onMapClick?: (location: GeoLocation) => void;
   className?: string;
+  showRoute?: boolean;
 }
 
 const GEOAPIFY_API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
 
-const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w-full' }: MapViewProps) => {
+const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w-full', showRoute = false }: MapViewProps) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
@@ -114,43 +116,37 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
                     .addTo(map)
                     .bindPopup(destination.name);
                 destinationMarkersRef.current.push(marker);
-
-                // Draw route if user location is available
-                if (userLocation) {
-                    updateRoute(userLocation, destination);
-                }
              }
         });
+        
+        // Draw route if we have an origin and destination for it
+        if (showRoute && userLocation && destinations.length > 0) {
+          const origin = userLocation;
+          const finalDestination = destinations[destinations.length -1]; // Assume last one is the target
+          updateRoute(origin, finalDestination);
+        }
     }
 
     // Fit map to bounds
-    if(userLocation && destinations.length > 0) {
-        const validDestinations = destinations.filter(d => d.latitude && d.longitude);
-        if (validDestinations.length > 0) {
-            const points = [
-                L.latLng(userLocation.latitude, userLocation.longitude),
-                ...validDestinations.map(d => L.latLng(d.latitude, d.longitude))
-            ];
-            const bounds = L.latLngBounds(points);
-            if(bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
+    const allPoints: L.LatLng[] = [];
+    if (userLocation) {
+        allPoints.push(L.latLng(userLocation.latitude, userLocation.longitude));
+    }
+    destinations.forEach(d => {
+        if(d.latitude && d.longitude) {
+            allPoints.push(L.latLng(d.latitude, d.longitude))
         }
-    } else if (destinations.length > 0) {
-        const validDestinations = destinations.filter(d => d.latitude && d.longitude);
-        if (validDestinations.length > 0) {
-            const points = validDestinations.map(d => L.latLng(d.latitude, d.longitude));
-            const bounds = L.latLngBounds(points);
-            if(bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
+    })
+
+    if (allPoints.length > 0) {
+        const bounds = L.latLngBounds(allPoints);
+        if(bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [50, 50] });
         }
-    } else if (userLocation) {
-        map.setView([userLocation.latitude, userLocation.longitude], 13);
     }
 
 
-  }, [destinations, userLocation]);
+  }, [destinations, userLocation, showRoute]);
 
   // Function to update the route between user and destination
   const updateRoute = async (origin: GeoLocation, destination: Destination) => {
