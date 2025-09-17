@@ -25,17 +25,17 @@ export function ModeChart({ trips }: ModeChartProps) {
     }, [trips]);
 
     return (
-        <Card className="col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
+        <Card className="col-span-1 lg:col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">Transportation Modes</CardTitle>
-                <CardDescription>A complete breakdown of your travel methods and their efficiency.</CardDescription>
+                <CardDescription>A breakdown of your travel methods.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex items-center justify-center p-6">
                  {data.length === 0 ? (
                     <p className="text-muted-foreground">Add trips to see your travel habits.</p>
                 ) : (
                     <div className="w-full h-full relative">
-                        <Image src="https://picsum.photos/400/300" data-ai-hint="transportation collage" alt="Transportation modes" layout="fill" className="object-cover rounded-lg" />
+                        <Image src="https://picsum.photos/seed/transport/400/300" data-ai-hint="transportation collage" alt="Transportation modes" fill className="object-cover rounded-lg" />
                         <div className="absolute inset-0 bg-black/60 rounded-lg p-4 flex items-center justify-center">
                             <ResponsiveContainer width="100%" height={250}>
                                 <PieChart>
@@ -74,6 +74,7 @@ export function ModeChart({ trips }: ModeChartProps) {
                                         }}
                                         labelStyle={{ color: 'hsl(var(--foreground))' }}
                                     />
+                                    <Legend formatter={(value) => <span className="capitalize text-white/80">{value}</span>} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>

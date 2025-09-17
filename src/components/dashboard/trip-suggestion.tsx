@@ -50,14 +50,14 @@ export function TripSuggestion({ trips }: TripSuggestionProps) {
   }, [trips]);
 
   return (
-    <Card className="col-span-1 lg:col-span-1 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
+    <Card className="col-span-1 lg:col-span-2 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">AI Trip Suggestion</CardTitle>
-        <CardDescription className="text-slate-400">Intelligent predictions based on your unique travel patterns.</CardDescription>
+        <CardDescription className="text-slate-400">Intelligent predictions based on your travel patterns.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="w-full h-full relative">
-            <Image src="https://picsum.photos/seed/ai/400/400" data-ai-hint="futuristic interface" alt="AI suggestion background" layout="fill" className="object-cover rounded-lg" />
+        <div className="w-full h-full relative min-h-[250px]">
+            <Image src="https://picsum.photos/seed/ai/600/400" data-ai-hint="futuristic interface" alt="AI suggestion background" fill className="object-cover rounded-lg" />
             <div className="absolute inset-0 bg-black/60 rounded-lg p-6 flex flex-col items-center justify-center text-center">
                 {isLoading && (
                     <div className="flex flex-col items-center gap-2 text-white/80">
