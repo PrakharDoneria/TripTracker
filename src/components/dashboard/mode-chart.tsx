@@ -25,7 +25,7 @@ export function ModeChart({ trips }: ModeChartProps) {
     }, [trips]);
 
     return (
-        <Card className="col-span-1 lg:col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
+        <Card className="md:col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">Transportation Modes</CardTitle>
                 <CardDescription>A breakdown of your travel methods.</CardDescription>

@@ -50,7 +50,7 @@ export function TripSuggestion({ trips }: TripSuggestionProps) {
   }, [trips]);
 
   return (
-    <Card className="col-span-1 lg:col-span-2 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
+    <Card className="md:col-span-2 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">AI Trip Suggestion</CardTitle>
         <CardDescription className="text-slate-400">Intelligent predictions based on your travel patterns.</CardDescription>
