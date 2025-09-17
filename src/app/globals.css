@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,24 +44,24 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 224 71.4% 4.1%;
+    --background: 225 13% 8%;
     --foreground: 0 0% 98%;
-    --card: 240 5.9% 10%;
+    --card: 225 13% 12%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 6% 10%;
+    --popover: 225 13% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4% 16%;
+    --secondary: 225 13% 20%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 16%;
+    --muted: 225 13% 20%;
     --muted-foreground: 0 0% 63.9%;
     --accent: 197 71% 62%;
     --accent-foreground: 197 71% 10%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 25%;
-    --input: 240 4% 16%;
+    --border: 225 13% 25%;
+    --input: 225 13% 20%;
     --ring: 217.2 91.2% 59.8%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
