@@ -20,29 +20,9 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 export function Header() {
-  const { trips } = useTripStore();
   const { user, logout } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-
-  const handleExport = () => {
-    try {
-      const dataStr = JSON.stringify(trips, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-
-      const exportFileDefaultName = `TripTracker_Export_${new Date().toISOString().split('T')[0]}.json`;
-
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      document.body.appendChild(linkElement);
-      linkElement.click();
-      document.body.removeChild(linkElement);
-    } catch (error) {
-      console.error("Failed to export data:", error);
-      alert("An error occurred while exporting data. Please try again.");
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -84,46 +64,43 @@ export function Header() {
             </h1>
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
-          <Link href="/app">
-            <Button variant="ghost" size="icon">
-              <Home className="h-5 w-5" />
-              <span className="sr-only">Home</span>
-            </Button>
-          </Link>
-          <Link href="/app/dashboard">
-            <Button variant="ghost" size="icon">
-              <LayoutDashboard className="h-5 w-5" />
-              <span className="sr-only">Dashboard</span>
-            </Button>
-          </Link>
-          <Link href="/app/map">
-            <Button variant="ghost" size="icon">
-              <Map className="h-5 w-5" />
-              <span className="sr-only">Map View</span>
-            </Button>
-          </Link>
-          <Link href="/app/camera">
-            <Button variant="ghost" size="icon">
-              <Camera className="h-5 w-5" />
-              <span className="sr-only">Camera View</span>
-            </Button>
-          </Link>
-           <Link href="/app/business/new">
-            <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
-              <Briefcase className="h-5 w-5" />
-              <span className="sr-only">List Business</span>
-            </Button>
-          </Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            <Link href="/app">
+              <Button variant="ghost" size="icon">
+                <Home className="h-5 w-5" />
+                <span className="sr-only">Home</span>
+              </Button>
+            </Link>
+            <Link href="/app/dashboard">
+              <Button variant="ghost" size="icon">
+                <LayoutDashboard className="h-5 w-5" />
+                <span className="sr-only">Dashboard</span>
+              </Button>
+            </Link>
+            <Link href="/app/map">
+              <Button variant="ghost" size="icon">
+                <Map className="h-5 w-5" />
+                <span className="sr-only">Map View</span>
+              </Button>
+            </Link>
+            <Link href="/app/camera">
+              <Button variant="ghost" size="icon">
+                <Camera className="h-5 w-5" />
+                <span className="sr-only">Camera View</span>
+              </Button>
+            </Link>
+            <Link href="/app/business/new">
+              <Button variant="ghost" size="icon">
+                <Briefcase className="h-5 w-5" />
+                <span className="sr-only">List Business</span>
+              </Button>
+            </Link>
+          </nav>
+          
+          <div className="h-6 w-px bg-border hidden md:block mx-2" />
 
-          <Button onClick={handleExport} disabled={trips.length === 0} variant="outline" size="sm" className="hidden sm:inline-flex">
-            <Download className="mr-2 h-4 w-4" />
-            Export Data
-          </Button>
-           <Button onClick={handleExport} disabled={trips.length === 0} variant="ghost" size="icon" className="sm:hidden">
-            <Download className="h-5 w-5" />
-            <span className="sr-only">Export Data</span>
-          </Button>
-
+          {/* User Menu */}
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
