@@ -144,7 +144,7 @@ export default function NewPlacePage() {
                                     />
 
                                     <div className="h-[250px] rounded-md overflow-hidden border">
-                                        <MapView userLocation={mapCenter} destinations={mapDestination} onMapClick={handleMapClick} />
+                                        <MapView userLocation={mapCenter} destinations={mapDestination} onMapClick={handleMapClick} disablePan={true} />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">

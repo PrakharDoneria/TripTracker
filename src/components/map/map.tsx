@@ -14,6 +14,7 @@ interface MapViewProps {
   onMapClick?: (location: GeoLocation) => void;
   className?: string;
   showRoute?: boolean;
+  disablePan?: boolean;
 }
 
 const GEOAPIFY_API_KEY = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
@@ -36,7 +37,7 @@ const customPlaceIcon = L.divIcon({
 });
 
 
-const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w-full', showRoute = false }: MapViewProps) => {
+const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w-full', showRoute = false, disablePan = false }: MapViewProps) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
@@ -165,26 +166,28 @@ const MapView = ({ userLocation, destinations, onMapClick, className = 'h-full w
         }
     }
 
-    // Fit map to bounds
-    const allPoints: L.LatLng[] = [];
-    if (userLocation) {
-        allPoints.push(L.latLng(userLocation.latitude, userLocation.longitude));
-    }
-    destinations.forEach(d => {
-        if(d.latitude && d.longitude) {
-            allPoints.push(L.latLng(d.latitude, d.longitude))
+    // Fit map to bounds, but only if not disabled
+    if (!disablePan) {
+        const allPoints: L.LatLng[] = [];
+        if (userLocation) {
+            allPoints.push(L.latLng(userLocation.latitude, userLocation.longitude));
         }
-    })
+        destinations.forEach(d => {
+            if(d.latitude && d.longitude) {
+                allPoints.push(L.latLng(d.latitude, d.longitude))
+            }
+        })
 
-    if (allPoints.length > 0) {
-        const bounds = L.latLngBounds(allPoints);
-        if(bounds.isValid()) {
-            map.fitBounds(bounds, { padding: [50, 50] });
+        if (allPoints.length > 0) {
+            const bounds = L.latLngBounds(allPoints);
+            if(bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
         }
     }
 
 
-  }, [destinations, userLocation, showRoute]);
+  }, [destinations, userLocation, showRoute, disablePan]);
 
   // Function to update the route between user and destination
   const updateRoute = async (origin: GeoLocation, destination: Destination) => {
