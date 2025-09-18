@@ -190,6 +190,12 @@ function MapPageContent() {
     return liveUserLocation;
   }, [focusedTrip, liveUserLocation])
 
+  const handleEmergencyCall = () => {
+    if (emergencyContact) {
+      window.location.href = `tel:${emergencyContact}`;
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-transparent">
       <Header />
@@ -217,8 +223,8 @@ function MapPageContent() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction asChild>
-                                <a href={`tel:${emergencyContact}`}>Call Now</a>
+                            <AlertDialogAction onClick={handleEmergencyCall}>
+                                Call Now
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
