@@ -2,13 +2,10 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Header } from '@/components/layout/header';
 import { TripList } from '@/components/trip/trip-list';
 import { ConsentModal } from '@/components/consent-modal';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { useTripStore } from '@/hooks/use-trip-store';
 import { useAuth } from '@/hooks/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';

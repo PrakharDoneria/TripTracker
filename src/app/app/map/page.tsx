@@ -1,4 +1,5 @@
 
+
 'use client';
 import { Header } from "@/components/layout/header";
 import { useTripStore } from "@/hooks/use-trip-store";
@@ -74,11 +75,11 @@ function MapPageContent() {
 
   useEffect(() => {
     if (user) {
-        if(trips.length === 0) fetchTrips(user.uid);
-        if(businesses.length === 0) fetchBusinesses();
-        if(places.length === 0) fetchPlaces(user.uid);
+        fetchTrips(user.uid);
+        fetchBusinesses();
+        fetchPlaces(user.uid);
     }
-  }, [user, trips.length, fetchTrips, businesses.length, fetchBusinesses, places.length, fetchPlaces]);
+  }, [user, fetchTrips, fetchBusinesses, fetchPlaces]);
 
   useEffect(() => {
     if (tripId) {

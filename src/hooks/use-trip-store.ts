@@ -1,7 +1,7 @@
 
 'use client';
 import { create } from 'zustand';
-import type { Trip, TripParticipant } from '@/lib/types';
+import type { Trip } from '@/lib/types';
 import {
     addTripToFirestore,
     updateTripInFirestore,
