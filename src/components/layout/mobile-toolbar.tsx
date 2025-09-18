@@ -12,7 +12,7 @@ const navItems = [
   { href: '/app', icon: Home, label: 'Home' },
   { href: '/app/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/app/map', icon: Map, label: 'Map' },
-  { href: '/app/more', icon: Camera, label: 'More' },
+  { href: '/app/camera', icon: Camera, label: 'Camera' },
 ];
 
 export function MobileToolbar() {
