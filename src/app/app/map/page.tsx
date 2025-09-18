@@ -191,7 +191,7 @@ function MapPageContent() {
   }, [focusedTrip, liveUserLocation])
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
+    <div className="flex min-h-screen w-full flex-col bg-transparent">
       <Header />
       <main className="flex-1 relative">
         <MapView 

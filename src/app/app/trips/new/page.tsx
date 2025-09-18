@@ -93,7 +93,7 @@ function NewTripForm() {
 
 export default function NewTripPage() {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
+    <div className="flex min-h-screen w-full flex-col bg-transparent">
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8 mb-20 md:mb-0">
         <Suspense fallback={<div>Loading...</div>}>

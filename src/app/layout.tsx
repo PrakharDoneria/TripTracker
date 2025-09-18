@@ -27,6 +27,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#1e3a8a" />
       </head>
       <body className="font-body antialiased">
+        <div 
+          className="fixed inset-0 z-[-1] bg-cover bg-center" 
+          style={{ backgroundImage: "url('/background.jpg')" }}
+        />
         <AuthProvider>
           {children}
           <Toaster />

@@ -23,7 +23,7 @@ export default function DashboardPage() {
     }, [user, fetchTrips]);
 
     return (
-        <div className="flex min-h-screen w-full flex-col bg-background">
+        <div className="flex min-h-screen w-full flex-col bg-transparent">
             <Header />
             <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8 mb-20 md:mb-0">
                 <h2 className="text-3xl font-bold font-headline text-foreground mb-8 text-center">Your Travel Insights</h2>
