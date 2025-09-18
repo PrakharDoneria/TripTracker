@@ -88,3 +88,19 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes float {
+    0% {
+      transform: translateX(-150%);
+    }
+    100% {
+      transform: translateX(150vw);
+    }
+  }
+
+  .cloud {
+    @apply absolute bg-white/30 rounded-full;
+    animation: float linear infinite;
+  }
+}
