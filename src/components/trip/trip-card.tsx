@@ -113,7 +113,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
       const gem = await suggestHiddenGem({
         destinationName: trip.destination,
         destinationCoords: { latitude: trip.destinationCoords.lat, longitude: trip.destinationCoords.lon },
-        tripPurpose: trip.purpose,
+        tripPurpose: trip.purpose || 'other',
       });
       setHiddenGem(gem);
     } catch(error) {
