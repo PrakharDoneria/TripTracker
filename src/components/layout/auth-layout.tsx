@@ -9,7 +9,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
             {/* Background Illustration */}
             <div className="absolute inset-0 z-0">
                 <Image
-                    src="https://picsum.photos/seed/travel-illustration/400/800"
+                    src="/background.png"
                     alt="Whimsical landscape illustration"
                     data-ai-hint="whimsical landscape illustration"
                     fill
