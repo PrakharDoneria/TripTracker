@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Map, Home, LayoutDashboard, Camera, User, LogOut, Briefcase, PlusCircle, MoreVertical } from 'lucide-react';
@@ -17,11 +16,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const pathname = usePathname();
+
+  const navItems = [
+    { href: '/app/map', label: 'Map' },
+    { href: '/app/dashboard', label: 'Dashboard' },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -65,6 +72,19 @@ export function Header() {
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2">
+            {navItems.map((item) => (
+                <Link key={item.href} href={item.href}>
+                    <Button 
+                        variant="link"
+                        className={cn("text-muted-foreground hover:text-primary hover:no-underline text-base", 
+                            pathname === item.href && "text-primary font-semibold"
+                        )}
+                    >
+                        {item.label}
+                    </Button>
+                </Link>
+            ))}
+             <div className="h-8 w-px bg-border mx-2" />
             <Link href="/app/trips/new">
               <Button>
                 <PlusCircle className="mr-2 h-5 w-5" />
