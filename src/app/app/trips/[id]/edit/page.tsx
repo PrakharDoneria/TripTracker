@@ -54,7 +54,7 @@ export default function EditTripPage() {
 
     if (loading || isTripStoreLoading) {
         return (
-             <div className="flex min-h-screen w-full flex-col bg-background">
+             <div className="flex min-h-screen w-full flex-col bg-transparent">
                 <Header />
                 <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
                     <p>Loading trip details...</p>
@@ -65,7 +65,7 @@ export default function EditTripPage() {
 
     if (!trip) {
         return (
-            <div className="flex min-h-screen w-full flex-col bg-background">
+            <div className="flex min-h-screen w-full flex-col bg-transparent">
                 <Header />
                 <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
                     <p>Trip not found. You may not have access or it may have been deleted.</p>
@@ -75,7 +75,7 @@ export default function EditTripPage() {
     }
 
     return (
-        <div className="flex min-h-screen w-full flex-col bg-background">
+        <div className="flex min-h-screen w-full flex-col bg-transparent">
             <Header />
             <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
                 <div className="max-w-2xl mx-auto">
