@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import React, { useEffect, useState, useRef, useCallback } from "react"
@@ -7,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, VideoOff, IndianRupee, UserPlus, X, Search } from "lucide-react"
+import { Calendar as CalendarIcon, Loader2, Wand2, Lightbulb, Bot, Camera as CameraIcon, IndianRupee, UserPlus, X, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -37,7 +38,7 @@ import { useAuth } from "@/hooks/use-auth"
 import PlaceSearch, { type Place } from "./place-search"
 import { Textarea } from "../ui/textarea"
 import { transportationIcons } from "../icons"
-import { Destination, GeoLocation } from "@/lib/location"
+import { Destination } from "@/lib/location"
 import { Checkbox } from "../ui/checkbox"
 import Image from "next/image"
 import { findUserByEmail } from "@/lib/firestore"
@@ -427,205 +428,208 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
   };
 
   const cardContent = (
-    <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="origin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Origin</FormLabel>
-                  <FormControl>
-                    <PlaceSearch
-                      instanceId="origin-search"
-                      placeholder="e.g., Home"
-                      value={originValue}
-                      onPlaceSelect={handleOriginSelect}
+    <Card>
+        <CardContent className="p-6">
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
+                    <FormField
+                    control={form.control}
+                    name="origin"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Origin</FormLabel>
+                        <FormControl>
+                            <PlaceSearch
+                            instanceId="origin-search"
+                            placeholder="e.g., Home"
+                            value={originValue}
+                            onPlaceSelect={handleOriginSelect}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="destination"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Destination</FormLabel>
-                  <FormControl>
-                    <PlaceSearch
-                       instanceId="destination-search"
-                       placeholder="e.g., Office"
-                       value={destinationValue}
-                       onPlaceSelect={handleDestinationSelect}
+                    <FormField
+                    control={form.control}
+                    name="destination"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Destination</FormLabel>
+                        <FormControl>
+                            <PlaceSearch
+                            instanceId="destination-search"
+                            placeholder="e.g., Office"
+                            value={destinationValue}
+                            onPlaceSelect={handleDestinationSelect}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField control={form.control} name="startTime" render={({ field }) => (
-              <FormItem className="flex flex-col"><FormLabel>Start Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="endTime" render={({ field }) => (
-              <FormItem className="flex flex-col"><FormLabel>End Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="mode" render={({ field }) => (
-              <FormItem><FormLabel>Mode of Transport</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}><FormControl>
-                  <SelectTrigger><SelectValue placeholder="Select a mode" /></SelectTrigger></FormControl>
-                  <SelectContent>
-                    {transportationModes.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
-                  </SelectContent>
-                </Select><FormMessage />
-              </FormItem>
-            )} />
-             <FormField control={form.control} name="purpose" render={({ field }) => (
-              <FormItem><FormLabel>Purpose</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}><FormControl>
-                  <SelectTrigger><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl>
-                  <SelectContent>
-                    {tripPurposes.map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}
-                  </SelectContent>
-                </Select><FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="companions" render={({ field }) => (
-              <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <Card className="bg-background/50">
-              <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2"><UserPlus /> Share Trip & Expenses</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                  <div className="flex gap-2">
-                      <Input 
-                          type="email" 
-                          placeholder="Enter friend's email" 
-                          value={friendEmail}
-                          onChange={(e) => setFriendEmail(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddFriend();
-                            }
-                          }}
-                      />
-                      <Button type="button" onClick={handleAddFriend} disabled={isSearchingFriend || !friendEmail}>
-                          {isSearchingFriend ? <Loader2 className="animate-spin" /> : <Search />}
-                      </Button>
-                  </div>
-                  <div className="space-y-2">
-                      {sharedWith.map(person => (
-                          <Badge key={person.uid} variant="secondary" className="flex justify-between items-center text-sm">
-                              <span>{person.email}</span>
-                              <button type="button" onClick={() => handleRemoveFriend(person.uid)} className="ml-2 rounded-full hover:bg-muted-foreground/20 p-0.5">
-                                  <X className="h-3 w-3"/>
-                              </button>
-                          </Badge>
-                      ))}
-                  </div>
-                  {sharedWith.length > 0 && <FormDescription>This trip and its expenses will be shared with these friends.</FormDescription>}
-              </CardContent>
-            </Card>
-
-            <FormField control={form.control} name="expenses" render={({ field }) => (
-                <FormItem>
-                <FormLabel>Trip Expenses</FormLabel>
-                <div className="relative">
-                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <FormControl>
-                        <Input type="number" min="0" placeholder="0.00" className="pl-8" {...field} />
-                    </FormControl>
-                </div>
-                {sharedWith.length > 0 && <FormDescription>Total expense will be split among {sharedWith.length + 1} people.</FormDescription>}
-                <FormMessage />
-                </FormItem>
-            )} />
-            <FormField
-              control={form.control}
-              name="destinationImageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Destination Image</FormLabel>
-                  <Card>
-                    <CardContent className="p-3">
-                      <canvas ref={canvasRef} className="hidden" />
-                      {isCameraOpen ? (
-                        <div className="space-y-2">
-                          <div className="bg-muted rounded-md overflow-hidden aspect-video flex items-center justify-center">
-                            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover"/>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button onClick={handleCaptureImage} className="w-full">Capture</Button>
-                            <Button onClick={stopCamera} variant="outline" className="w-full">Close Camera</Button>
-                          </div>
-                        </div>
-                      ) : capturedImage ? (
-                        <div className="space-y-2">
-                          <Image src={capturedImage} alt="Captured destination" width={400} height={225} className="rounded-md w-full aspect-video object-cover" />
-                          <Button onClick={() => form.setValue('destinationImageUrl', '')} variant="outline" className="w-full">Remove Image</Button>
-                        </div>
-                      ) : (
-                        <Button onClick={startCamera} variant="outline" className="w-full flex items-center gap-2">
-                          <CameraIcon />
-                          Open Camera
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="isNicePlace"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Nice place to visit
-                    </FormLabel>
-                    <FormDescription>
-                      Get a vibration alert when you're about to arrive.
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Notes</FormLabel>
-                    <FormControl>
-                        <Textarea
-                        placeholder="Add any notes about your trip..."
-                        className="resize-none"
-                        {...field}
-                        />
-                    </FormControl>
-                    <FormDescription>
-                        You can add details like ticket numbers, reminders, or observations.
-                    </FormDescription>
-                    <FormMessage />
+                    <FormField control={form.control} name="startTime" render={({ field }) => (
+                    <FormItem className="flex flex-col"><FormLabel>Start Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="endTime" render={({ field }) => (
+                    <FormItem className="flex flex-col"><FormLabel>End Time</FormLabel><DateTimePicker field={field} /><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="mode" render={({ field }) => (
+                    <FormItem><FormLabel>Mode of Transport</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}><FormControl>
+                        <SelectTrigger><SelectValue placeholder="Select a mode" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                            {transportationModes.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
+                        </SelectContent>
+                        </Select><FormMessage />
                     </FormItem>
-                )}
-            />
-          </div>
-          <Button type="submit" className="w-full transition-transform active:scale-[0.98]">{trip ? 'Update Trip' : 'Save Trip'}</Button>
-        </form>
-      </Form>
+                    )} />
+                    <FormField control={form.control} name="purpose" render={({ field }) => (
+                    <FormItem><FormLabel>Purpose</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}><FormControl>
+                        <SelectTrigger><SelectValue placeholder="Select a purpose" /></SelectTrigger></FormControl>
+                        <SelectContent>
+                            {tripPurposes.map(p => <SelectItem key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</SelectItem>)}
+                        </SelectContent>
+                        </Select><FormMessage />
+                    </FormItem>
+                    )} />
+                    <FormField control={form.control} name="companions" render={({ field }) => (
+                    <FormItem><FormLabel>Companions</FormLabel><FormControl><Input type="number" min="0" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    
+                    <Card className="bg-background/50">
+                    <CardHeader className="p-4">
+                        <CardTitle className="text-base flex items-center gap-2"><UserPlus /> Share Trip & Expenses</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 space-y-4">
+                        <div className="flex gap-2">
+                            <Input 
+                                type="email" 
+                                placeholder="Enter friend's email" 
+                                value={friendEmail}
+                                onChange={(e) => setFriendEmail(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleAddFriend();
+                                    }
+                                }}
+                            />
+                            <Button type="button" onClick={handleAddFriend} disabled={isSearchingFriend || !friendEmail} variant="secondary">
+                                {isSearchingFriend ? <Loader2 className="animate-spin" /> : <Search />}
+                            </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {sharedWith.map(person => (
+                                <Badge key={person.uid} variant="secondary" className="flex justify-between items-center text-sm">
+                                    <span>{person.email}</span>
+                                    <button type="button" onClick={() => handleRemoveFriend(person.uid)} className="ml-2 rounded-full hover:bg-muted-foreground/20 p-0.5">
+                                        <X className="h-3 w-3"/>
+                                    </button>
+                                </Badge>
+                            ))}
+                        </div>
+                        {sharedWith.length > 0 && <FormDescription>This trip and its expenses will be shared with these friends.</FormDescription>}
+                    </CardContent>
+                    </Card>
+
+                    <FormField control={form.control} name="expenses" render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Trip Expenses</FormLabel>
+                        <div className="relative">
+                            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <FormControl>
+                                <Input type="number" min="0" placeholder="0.00" className="pl-8" {...field} />
+                            </FormControl>
+                        </div>
+                        {sharedWith.length > 0 && <FormDescription>Total expense will be split among {sharedWith.length + 1} people.</FormDescription>}
+                        <FormMessage />
+                        </FormItem>
+                    )} />
+                    <FormField
+                    control={form.control}
+                    name="destinationImageUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Destination Image</FormLabel>
+                        <div className="p-3 border rounded-lg">
+                            <canvas ref={canvasRef} className="hidden" />
+                            {isCameraOpen ? (
+                            <div className="space-y-2">
+                                <div className="bg-muted rounded-md overflow-hidden aspect-video flex items-center justify-center">
+                                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover"/>
+                                </div>
+                                <div className="flex gap-2">
+                                <Button onClick={handleCaptureImage} className="w-full">Capture</Button>
+                                <Button onClick={stopCamera} variant="outline" className="w-full">Close Camera</Button>
+                                </div>
+                            </div>
+                            ) : capturedImage ? (
+                            <div className="space-y-2">
+                                <Image src={capturedImage} alt="Captured destination" width={400} height={225} className="rounded-md w-full aspect-video object-cover" />
+                                <Button onClick={() => form.setValue('destinationImageUrl', '')} variant="outline" className="w-full">Remove Image</Button>
+                            </div>
+                            ) : (
+                            <Button onClick={startCamera} variant="outline" className="w-full flex items-center gap-2">
+                                <CameraIcon />
+                                Open Camera
+                            </Button>
+                            )}
+                        </div>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="isNicePlace"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                            <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel>
+                            Nice place to visit
+                            </FormLabel>
+                            <FormDescription>
+                            Get a vibration alert when you're about to arrive.
+                            </FormDescription>
+                        </div>
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Notes</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                placeholder="Add any notes about your trip..."
+                                className="resize-none"
+                                {...field}
+                                />
+                            </FormControl>
+                            <FormDescription>
+                                You can add details like ticket numbers, reminders, or observations.
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <Button type="submit" className="w-full transition-transform active:scale-[0.98]">{trip ? 'Update Trip' : 'Save Trip'}</Button>
+                </form>
+            </Form>
+        </CardContent>
+    </Card>
   );
 
   const aiFeatures = !trip && (
@@ -657,21 +661,10 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
 
   return (
     <>
-      {/* If on a dedicated form page, wrap in a Card */}
-      { !onOriginChange && !onDestinationChange ? (
-         <Card>
-            <CardContent className="p-6">
-                {cardContent}
-                {aiFeatures}
-            </CardContent>
-         </Card>
-      ) : (
-        // If embedded, just render the form
-        <div className="space-y-6">
-            {cardContent}
-            {aiFeatures}
-        </div>
-      )}
+      <div className="space-y-6">
+        {cardContent}
+        {aiFeatures}
+      </div>
       
       <Dialog open={!!detectionResult} onOpenChange={() => setDetectionResult(null)}>
         <DialogContent>

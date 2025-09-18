@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo } from "react";
@@ -24,31 +25,26 @@ export function FrequentDestinations({ trips }: FrequentDestinationsProps) {
     }, [trips]);
     
     return (
-        <Card className="lg:col-span-1 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
+        <Card className="lg:col-span-1 flex flex-col bg-card text-card-foreground rounded-2xl shadow-lg">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">Frequent Destinations</CardTitle>
-                <CardDescription className="text-slate-400">Your most visited places.</CardDescription>
+                <CardDescription>Your most visited places.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center p-6 relative min-h-[250px]">
+            <CardContent className="flex-1 flex flex-col justify-center p-6 min-h-[250px]">
                 {destinations.length === 0 ? (
-                     <p className="text-slate-400">No destinations recorded yet.</p>
+                     <p className="text-muted-foreground text-center">No destinations recorded yet.</p>
                 ) : (
-                    <div className="w-full h-full absolute top-0 left-0 p-6">
-                         <Image src="https://picsum.photos/seed/map/600/400" data-ai-hint="abstract map" alt="Frequent destinations map" fill className="object-cover rounded-lg" />
-                         <div className="absolute inset-0 bg-black/50 rounded-lg p-6 flex flex-col justify-end">
-                            <ul className="space-y-2">
-                                {destinations.map(([name, count]) => (
-                                    <li key={name} className="flex items-center justify-between bg-black/30 backdrop-blur-sm p-2 rounded-md">
-                                        <div className="flex items-center gap-3">
-                                            <MapPin className="h-5 w-5 text-primary" />
-                                            <span className="font-medium truncate max-w-xs text-white">{name}</span>
-                                        </div>
-                                        <span className="text-white/80 font-semibold">{count} {count > 1 ? 'trips' : 'trip'}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                         </div>
-                    </div>
+                    <ul className="space-y-3">
+                        {destinations.map(([name, count]) => (
+                            <li key={name} className="flex items-center justify-between bg-secondary p-3 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <MapPin className="h-5 w-5 text-primary" />
+                                    <span className="font-medium truncate max-w-xs">{name}</span>
+                                </div>
+                                <span className="text-foreground/80 font-semibold">{count} {count > 1 ? 'trips' : 'trip'}</span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
             </CardContent>
         </Card>

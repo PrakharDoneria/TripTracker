@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
@@ -9,6 +10,7 @@ import dynamic from "next/dynamic";
 import type { Destination, GeoLocation } from '@/lib/location';
 import type { Place } from '@/components/trip/place-search';
 import type { TripPurpose } from '@/lib/types';
+import { MobileToolbar } from '@/components/layout/mobile-toolbar';
 
 const MapView = dynamic(() => import('@/components/map/map'), {
   loading: () => <div className="h-[400px] bg-muted rounded-lg animate-pulse" />,
@@ -68,22 +70,21 @@ function NewTripForm() {
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-        <div>
+        <div className="md:sticky md:top-20 self-start">
             <h2 className="text-2xl font-bold mb-4 font-headline text-foreground">Record a New Trip</h2>
-            <div className="md:sticky md:top-20">
-                <TripForm 
-                    onOriginChange={setOrigin}
-                    onDestinationChange={setDestination}
-                    initialOrigin={initialOrigin}
-                    prefilledDestination={prefilledDestination}
-                    prefilledPurpose={prefilledPurpose as TripPurpose | null}
-                />
-            </div>
+            <TripForm 
+                onOriginChange={setOrigin}
+                onDestinationChange={setDestination}
+                initialOrigin={initialOrigin}
+                prefilledDestination={prefilledDestination}
+                prefilledPurpose={prefilledPurpose as TripPurpose | null}
+            />
         </div>
-        <div className="rounded-lg overflow-hidden h-[400px] md:h-auto md:max-h-[calc(100vh-8rem)] md:sticky md:top-20">
+        <div className="rounded-lg overflow-hidden h-[400px] md:h-[calc(100vh-8rem)] md:sticky md:top-20 self-start">
             <MapView 
                 destinations={destinations}
                 userLocation={userLocation}
+                showRoute={destinations.length > 1}
             />
         </div>
     </div>
@@ -92,13 +93,14 @@ function NewTripForm() {
 
 export default function NewTripPage() {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-transparent">
+    <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
-      <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
+      <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8 mb-20 md:mb-0">
         <Suspense fallback={<div>Loading...</div>}>
           <NewTripForm />
         </Suspense>
       </main>
+      <MobileToolbar />
     </div>
   )
 }

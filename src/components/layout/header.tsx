@@ -2,11 +2,9 @@
 
 'use client';
 
-import { Download, Map, Home, LayoutDashboard, Camera, User, LogOut, Briefcase } from 'lucide-react';
+import { Map, Home, LayoutDashboard, Camera, User, LogOut, Briefcase, PlusCircle, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTripStore } from '@/hooks/use-trip-store';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import {
@@ -43,7 +41,7 @@ export function Header() {
   }
 
   return (
-    <header className="bg-slate-900/50 backdrop-blur-sm sticky top-0 z-40 border-b border-white/10">
+    <header className="bg-card/80 backdrop-blur-sm sticky top-0 z-40 border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/app" className="flex items-center gap-2 sm:gap-3">
             <svg
@@ -59,54 +57,31 @@ export function Header() {
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
             </svg>
-            <h1 className="text-xl sm:text-2xl font-bold font-headline text-white">
+            <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground">
               TripTracker
             </h1>
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            <Link href="/app">
-              <Button variant="ghost" size="icon">
-                <Home className="h-5 w-5" />
-                <span className="sr-only">Home</span>
-              </Button>
-            </Link>
-            <Link href="/app/dashboard">
-              <Button variant="ghost" size="icon">
-                <LayoutDashboard className="h-5 w-5" />
-                <span className="sr-only">Dashboard</span>
-              </Button>
-            </Link>
-            <Link href="/app/map">
-              <Button variant="ghost" size="icon">
-                <Map className="h-5 w-5" />
-                <span className="sr-only">Map View</span>
-              </Button>
-            </Link>
-            <Link href="/app/camera">
-              <Button variant="ghost" size="icon">
-                <Camera className="h-5 w-5" />
-                <span className="sr-only">Camera View</span>
-              </Button>
-            </Link>
-            <Link href="/app/business/new">
-              <Button variant="ghost" size="icon">
-                <Briefcase className="h-5 w-5" />
-                <span className="sr-only">List Business</span>
+          <nav className="hidden md:flex items-center gap-2">
+            <Link href="/app/trips/new">
+              <Button>
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Add Trip
               </Button>
             </Link>
           </nav>
           
-          <div className="h-6 w-px bg-border hidden md:block mx-2" />
+          <div className="h-8 w-px bg-border hidden md:block mx-2" />
 
           {/* User Menu */}
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                  <span className="sr-only">User Menu</span>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                   <Avatar className="h-8 w-8">
+                     <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -116,6 +91,12 @@ export function Header() {
                     <Link href="/app/business/new">
                         <Briefcase className="mr-2 h-4 w-4" />
                         <span>List Your Business</span>
+                    </Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                    <Link href="/app/more">
+                        <MoreVertical className="mr-2 h-4 w-4" />
+                        <span>More Options</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -131,3 +112,12 @@ export function Header() {
     </header>
   );
 }
+
+// Dummy Avatar components for Header to work standalone
+const Avatar = ({ className, children }: { className?: string, children: React.ReactNode }) => (
+  <div className={className}>{children}</div>
+)
+const AvatarFallback = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex items-center justify-center h-full w-full bg-muted rounded-full text-muted-foreground">{children}</div>
+)
+
