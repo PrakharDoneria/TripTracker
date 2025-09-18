@@ -29,7 +29,7 @@ export default function LandingPage() {
   
   return (
     <AuthLayout>
-        <div className="flex flex-col items-center justify-center text-center text-foreground h-full p-8">
+        <div className="flex flex-col justify-center text-center text-foreground h-full p-8">
             <div className="space-y-4 flex-grow flex flex-col justify-center items-center">
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                 WELCOME TO <br /> <span className='text-primary'>TripTracker</span>
@@ -38,13 +38,13 @@ export default function LandingPage() {
                 Find places and explore your favorite destinations with us.
               </p>
             </div>
-            <div className="w-full space-y-4 pb-8">
+            <div className="w-full pb-8">
               <Link href="/signup" className="w-full">
                 <Button size="lg" className="w-full">
                     Get Started
                 </Button>
               </Link>
-               <Link href="/login" className="w-full">
+               <Link href="/login" className="w-full block mt-4">
                 <Button size="lg" variant="secondary" className="w-full">
                     Login
                 </Button>
