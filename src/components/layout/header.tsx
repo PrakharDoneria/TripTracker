@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -78,11 +79,9 @@ export function Header() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                   <Avatar className="h-8 w-8">
-                     <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
-                   </Avatar>
-                </Button>
+                 <Avatar className="h-9 w-9 cursor-pointer">
+                    <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
@@ -112,12 +111,3 @@ export function Header() {
     </header>
   );
 }
-
-// Dummy Avatar components for Header to work standalone
-const Avatar = ({ className, children }: { className?: string, children: React.ReactNode }) => (
-  <div className={className}>{children}</div>
-)
-const AvatarFallback = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-center justify-center h-full w-full bg-muted rounded-full text-muted-foreground">{children}</div>
-)
-
