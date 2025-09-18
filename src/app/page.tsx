@@ -31,8 +31,8 @@ export default function LandingPage() {
     <AuthLayout>
         <div className="flex flex-col justify-center text-center text-foreground h-full p-8">
             <div className="space-y-4 flex-grow flex flex-col justify-center items-center">
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                WELCOME TO <br /> <span className='text-primary'>TripTracker</span>
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl font-headline">
+                WELCOME TO <br /> <span className='text-primary'>Raahi</span>
               </h1>
               <p className="max-w-[600px] text-foreground/80 md:text-lg">
                 Find places and explore your favorite destinations with us.

@@ -70,7 +70,7 @@ export default function SignUpPage() {
     <AuthLayout>
         <div className='p-8 flex flex-col justify-center h-full'>
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-foreground">Create an Account</h1>
+                <h1 className="text-3xl font-bold text-foreground font-headline">Create an Account</h1>
                 <p className="text-muted-foreground">
                     Enter your information to get started
                 </p>

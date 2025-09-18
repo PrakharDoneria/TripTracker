@@ -57,10 +57,10 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error('Login failed:', error);
       let description = 'An unexpected error occurred.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
           description = 'Invalid email or password.';
-      } else if (error.code === 'auth/invalid-credential') {
-          description = 'Invalid email or password.';
+      } else if (error.code === 'auth/invalid-email') {
+          description = 'Please enter a valid email address.';
       }
       
       toast({
@@ -77,7 +77,7 @@ export default function LoginPage() {
     <AuthLayout>
       <div className='p-8 flex flex-col justify-center h-full'>
         <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Login</h1>
+            <h1 className="text-3xl font-bold text-foreground font-headline">Login</h1>
             <p className="text-muted-foreground">
                 Enter your email below to login to your account
             </p>
