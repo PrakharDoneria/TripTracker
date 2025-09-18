@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -48,6 +47,8 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(values.email, values.password);
+      // The onAuthStateChanged listener in useAuth will handle redirection
+      // and email verification checks. We just need to show a success toast here.
       toast({
         title: 'Login Successful',
         description: 'Welcome back!',
@@ -55,10 +56,17 @@ export default function LoginPage() {
       router.push('/app');
     } catch (error: any) {
       console.error('Login failed:', error);
+      let description = 'An unexpected error occurred.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          description = 'Invalid email or password.';
+      } else if (error.code === 'auth/invalid-credential') {
+          description = 'Invalid email or password.';
+      }
+      
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description,
       });
     } finally {
       setIsLoading(false);

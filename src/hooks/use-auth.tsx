@@ -13,12 +13,14 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  sendEmailVerification,
   User,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useTripStore } from './use-trip-store';
 import { createUserProfile, getUserProfile } from '@/lib/firestore';
+import { useToast } from './use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -34,29 +36,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { clearTrips } = useTripStore();
+  const { toast } = useToast();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
       if (user) {
-        // Check for user profile and create if it doesn't exist
-        const profile = await getUserProfile(user.uid);
-        if (!profile) {
-          try {
-            await createUserProfile(user);
-          } catch(e) {
-            console.error("Failed to create user profile:", e);
+        if (!user.emailVerified) {
+          await sendEmailVerification(user);
+          await signOut(auth); // Log out the user
+          setUser(null);
+          toast({
+            variant: 'destructive',
+            title: 'Verification Required',
+            description: "We've sent a new verification link to your email. Please verify before logging in.",
+          });
+        } else {
+          setUser(user);
+          // Check for user profile and create if it doesn't exist
+          const profile = await getUserProfile(user.uid);
+          if (!profile) {
+            try {
+              await createUserProfile(user);
+            } catch(e) {
+              console.error("Failed to create user profile:", e);
+            }
           }
         }
+      } else {
+        setUser(null);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const signup = (email: string, password: string) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const signup = async (email: string, password: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(userCredential.user);
+    await signOut(auth); // Sign out immediately after signup
+    return userCredential;
   };
 
   const login = (email: string, password: string) => {

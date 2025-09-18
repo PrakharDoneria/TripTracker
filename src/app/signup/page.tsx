@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState } from 'react';
@@ -49,16 +48,18 @@ export default function SignUpPage() {
     try {
       await signup(values.email, values.password);
       toast({
-        title: 'Account Created',
-        description: 'You have been successfully signed up.',
+        title: 'Verification Email Sent',
+        description: 'Please check your inbox and verify your email address to log in.',
       });
-      router.push('/app');
+      router.push('/login');
     } catch (error: any) {
       console.error('Sign up failed:', error);
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: error.message || 'An unexpected error occurred.',
+        description: error.code === 'auth/email-already-in-use' 
+            ? 'This email is already registered. Please log in.' 
+            : (error.message || 'An unexpected error occurred.'),
       });
     } finally {
       setIsLoading(false);
