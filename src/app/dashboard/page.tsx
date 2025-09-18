@@ -16,7 +16,7 @@ export default function DashboardPage() {
         <div className="flex min-h-screen w-full flex-col bg-background">
             <Header />
             <main className="flex-1 container mx-auto p-4 md:p-6 lg:p-8">
-                <h2 className="text-3xl font-bold font-headline text-foreground mb-8 text-center">Your Travel Insights</h2>
+                <h2 className="text-3xl font-bold font-headline text-white mb-8 text-center">Your Travel Insights</h2>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                    <TripSuggestion trips={trips} />

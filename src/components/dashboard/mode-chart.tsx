@@ -25,14 +25,14 @@ export function ModeChart({ trips }: ModeChartProps) {
     }, [trips]);
 
     return (
-        <Card className="lg:col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
+        <Card className="lg:col-span-1 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">Transportation Modes</CardTitle>
-                <CardDescription>A breakdown of your travel methods.</CardDescription>
+                <CardDescription className="text-slate-400">A breakdown of your travel methods.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center p-6 relative">
+            <CardContent className="flex-1 flex items-center justify-center p-6 relative min-h-[250px]">
                  {data.length === 0 ? (
-                    <p className="text-muted-foreground">Add trips to see your travel habits.</p>
+                    <p className="text-slate-400">Add trips to see your travel habits.</p>
                 ) : (
                     <div className="w-full h-full absolute top-0 left-0 p-6">
                         <Image src="https://picsum.photos/seed/transport/400/300" data-ai-hint="transportation collage" alt="Transportation modes" fill className="object-cover rounded-lg" />

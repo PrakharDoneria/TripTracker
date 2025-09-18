@@ -24,14 +24,14 @@ export function FrequentDestinations({ trips }: FrequentDestinationsProps) {
     }, [trips]);
     
     return (
-        <Card className="lg:col-span-1 flex flex-col bg-card/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg">
+        <Card className="lg:col-span-1 flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 rounded-2xl shadow-lg text-white">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">Frequent Destinations</CardTitle>
-                <CardDescription>Your most visited places.</CardDescription>
+                <CardDescription className="text-slate-400">Your most visited places.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex items-center justify-center p-6 relative">
+            <CardContent className="flex-1 flex items-center justify-center p-6 relative min-h-[250px]">
                 {destinations.length === 0 ? (
-                     <p className="text-muted-foreground">No destinations recorded yet.</p>
+                     <p className="text-slate-400">No destinations recorded yet.</p>
                 ) : (
                     <div className="w-full h-full absolute top-0 left-0 p-6">
                          <Image src="https://picsum.photos/seed/map/600/400" data-ai-hint="abstract map" alt="Frequent destinations map" fill className="object-cover rounded-lg" />

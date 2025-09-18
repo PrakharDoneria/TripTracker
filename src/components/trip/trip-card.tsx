@@ -137,7 +137,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
   const isShared = trip.participants.length > 1;
   
   return (
-    <Card className="hover:shadow-md transition-shadow duration-300 relative group flex flex-col">
+    <Card className="hover:shadow-lg transition-shadow duration-300 relative group flex flex-col bg-slate-900/50 backdrop-blur-sm border-white/10 text-white rounded-2xl">
       <div className='flex flex-col md:flex-row'>
         {trip.destinationImageUrl && (
           <div className="md:w-1/3 relative h-48 md:h-auto">
@@ -182,9 +182,9 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
             </div>
             <div className="flex items-start justify-between gap-4">
                 <CardTitle className="flex items-center gap-2 text-lg flex-wrap pr-16">
-                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <MapPin className="h-5 w-5 text-slate-400 shrink-0" />
                     <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.origin}>{trip.origin}</span>
-                    <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <ArrowRight className="h-5 w-5 shrink-0 text-slate-400" />
                     <span className="font-semibold truncate max-w-[150px] sm:max-w-xs" title={trip.destination}>{trip.destination}</span>
                 </CardTitle>
                 <Badge variant="secondary" className="flex items-center gap-2 shrink-0">
@@ -193,7 +193,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
                 </Badge>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-2 text-sm text-muted-foreground">
+          <CardContent className="grid gap-2 text-sm text-slate-300">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>
@@ -244,12 +244,12 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
               )}
               {co2 !== null && (
                   <div className="flex items-center gap-2">
-                      <Leaf className="h-4 w-4 text-green-600" />
+                      <Leaf className="h-4 w-4 text-green-500" />
                       <span>~{co2.toFixed(0)}g CO₂e</span>
                   </div>
               )}
               {trip.isNicePlace && (
-                <div className="flex items-center gap-2 text-yellow-500">
+                <div className="flex items-center gap-2 text-yellow-400">
                   <Star className="h-4 w-4" />
                   <span>Nice place to visit</span>
                 </div>
@@ -258,7 +258,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
             {trip.notes && (
               <div className="flex items-start gap-2 pt-2">
                 <StickyNote className="h-4 w-4 mt-1 shrink-0" />
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{trip.notes}</p>
+                <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{trip.notes}</p>
               </div>
             )}
           </CardContent>
@@ -266,7 +266,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
 
        
       </div>
-       <div className="border-t p-3 space-y-4 bg-muted/30">
+       <div className="border-t p-3 space-y-4 bg-black/20">
             <div className="flex items-center justify-start gap-2">
                 <Link href={`/app/map?tripId=${trip.id}`}>
                     <Button variant="outline" size="sm">
@@ -282,7 +282,7 @@ export function TripCard({ trip, isMostRecent = false }: TripCardProps) {
                 )}
             </div>
              {hiddenGem && (
-                <Alert className="border-primary/50 bg-primary/5">
+                <Alert className="border-primary/50 bg-primary/10">
                     <Gem className="h-4 w-4 text-primary" />
                     <AlertTitle className="text-primary font-bold">{hiddenGem.name} ({hiddenGem.category})</AlertTitle>
                     <AlertDescription>

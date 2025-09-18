@@ -71,11 +71,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="mx-auto w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-transparent p-4">
+      <Card className="mx-auto w-full max-w-sm bg-slate-900/50 backdrop-blur-sm border-white/10 text-white">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
+          <CardDescription className="text-slate-400">
             Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
@@ -118,9 +118,9 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 text-center text-sm text-slate-300">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="underline">
+            <Link href="/signup" className="underline text-primary">
               Sign up
             </Link>
           </div>

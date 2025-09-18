@@ -43,7 +43,7 @@ export function Header() {
   }
 
   return (
-    <header className="bg-card shadow-sm sticky top-0 z-40 border-b">
+    <header className="bg-slate-900/50 backdrop-blur-sm sticky top-0 z-40 border-b border-white/10">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/app" className="flex items-center gap-2 sm:gap-3">
             <svg
@@ -59,7 +59,7 @@ export function Header() {
                 <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
             </svg>
-            <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold font-headline text-white">
               TripTracker
             </h1>
         </Link>

@@ -18,7 +18,7 @@ export function MobileToolbar() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-lg md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/50 backdrop-blur-sm border-t border-white/10 shadow-lg md:hidden">
       <div className="h-16 flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -38,7 +38,7 @@ export function MobileToolbar() {
               <div
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 w-16 transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                  isActive ? 'text-primary' : 'text-slate-400 hover:text-white'
                 )}
               >
                 <item.icon className="w-6 h-6" />
