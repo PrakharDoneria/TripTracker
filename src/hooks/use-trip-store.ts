@@ -39,6 +39,7 @@ export const useTripStore = create<TripState>()((set, get) => ({
     },
     addTrip: async (trip) => {
         const newTripId = await addTripToFirestore(trip);
+        // The trip object passed in already has the participants list.
         const newTrip = { ...trip, id: newTripId };
         set((state) => ({
             trips: [newTrip, ...state.trips].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()),
@@ -64,3 +65,4 @@ export const useTripStore = create<TripState>()((set, get) => ({
     getTripById: (id) => get().trips.find((trip) => trip.id === id),
     clearTrips: () => set({ trips: [], isLoading: true }),
 }));
+
