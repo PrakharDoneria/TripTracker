@@ -287,11 +287,13 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
       return;
     }
     
-    const participantUids = Array.from(new Set([user.uid, ...sharedWith.map(p => p.uid)]));
+    // Always include the original creator and the current user (if different)
+    const creatorId = trip?.creatorId || user.uid;
+    const participantUids = Array.from(new Set([creatorId, ...sharedWith.map(p => p.uid)]));
     
     const tripData = {
         ...data,
-        creatorId: trip?.creatorId || user.uid,
+        creatorId: creatorId,
         participants: participantUids,
         sharedWith,
         originCoords,
