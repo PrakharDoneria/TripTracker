@@ -287,7 +287,7 @@ export function TripForm({ trip, onOriginChange, onDestinationChange, initialOri
       return;
     }
     
-    const participantUids = [user.uid, ...sharedWith.map(p => p.uid)];
+    const participantUids = Array.from(new Set([user.uid, ...sharedWith.map(p => p.uid)]));
     
     const tripData = {
         ...data,
