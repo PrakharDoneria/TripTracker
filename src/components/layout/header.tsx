@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Map, Home, LayoutDashboard, Camera, User, LogOut, Briefcase, PlusCircle, MoreVertical } from 'lucide-react';
+import { Map, LayoutDashboard, PlusCircle, MoreVertical, LogOut, Briefcase, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
@@ -19,12 +19,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { usePWAInstall } from '@/hooks/use-pwa-install';
 
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const pathname = usePathname();
+  const { installPrompt, handleInstall } = usePWAInstall();
 
   const navItems = [
     { href: '/app/map', label: 'Map' },
@@ -59,6 +61,16 @@ export function Header() {
             </h1>
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* PWA Install Button for mobile */}
+          {installPrompt && (
+            <div className="md:hidden">
+              <Button onClick={handleInstall} size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Install App
+              </Button>
+            </div>
+          )}
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2">
             {navItems.map((item) => (
@@ -95,6 +107,12 @@ export function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                 {installPrompt && (
+                  <DropdownMenuItem onClick={handleInstall} className="md:hidden">
+                    <Download className="mr-2 h-4 w-4" />
+                    <span>Install App</span>
+                  </DropdownMenuItem>
+                 )}
                  <DropdownMenuItem asChild>
                     <Link href="/app/business/new">
                         <Briefcase className="mr-2 h-4 w-4" />
